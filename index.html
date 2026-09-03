@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestão Agrícola Mobile Offline</title>
+  <title>Seagri Ater</title>
+  
+  <!-- Referência ao Manifesto PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#198754">
+
+  <!-- Configurações Específicas para iOS (Safari) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Seagri Ater">
+  <link rel="apple-touch-icon" href="planting192.png">
+
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #f8f9fa; font-family: sans-serif; padding-top: 50px; }
@@ -189,7 +201,7 @@
     }
 
     // --- SERVICE WORKER PARA CACHE ---
-    if ('serviceWorker' in navigator) {
+   /* if ('serviceWorker' in navigator) {
       const swCode = `
         const CACHE_NAME = 'app-agricola-v1';
         self.addEventListener('install', e => {
@@ -204,6 +216,41 @@
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
+*/
+// --- SERVICE WORKER PARA CACHE E PWA ---
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE_NAME = 'app-agricola-v2';
+    const ASSETS = [
+      './',
+      './index.html',
+      './manifest.json',
+      './planting192.png',
+      './planting512.png',
+      'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
+    ];
+
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+      );
+    });
+
+    self.addEventListener('fetch', e => {
+      if (e.request.method === 'GET') {
+        e.respondWith(
+          caches.match(e.request).then(res => res || fetch(e.request))
+        );
+      }
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+
+
+
+    
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     document.addEventListener("DOMContentLoaded", async () => {
