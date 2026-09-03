@@ -1,6 +1,7 @@
 {
   "name": "Sistema ATER Mobile",
-  "short_name": "ATER App",
+  "short_name": "SEAGRI App",
+  "description": "Aplicativo mobile para gestão de Ater para atividades agrícolas e tratores.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f4f6f8",
@@ -18,3 +19,5 @@
     }
   ]
 }
+
+
