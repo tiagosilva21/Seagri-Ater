@@ -1,39 +1,485 @@
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2e7d32">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão Agrícola Mobile Offline</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-family: sans-serif; padding-top: 50px; }
+    .screen { display: none; padding: 15px; }
+    .active { display: block; }
+    .card-item { margin-bottom: 10px; border-left: 4px solid #198754; }
+    .network-banner {
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: 6px; text-align: center; font-size: 13px; font-weight: bold; z-index: 9999;
+    }
+    .online { background-color: #d1e7dd; color: #0f5132; }
+    .offline { background-color: #f8d7da; color: #842029; }
+  </style>
+</head>
+<body>
 
-<script src="offline-sync.js"></script>
-<script>
-  // Registro do Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('Service Worker Registrado'))
-      .catch((err) => console.error('Erro SW:', err));
-  }
+  <!-- INDICADOR DE STATUS DA CONEXÃO -->
+  <div id="net-status" class="network-banner online">🟢 Conectado - Sincronizado</div>
 
-  // Interceptador para a submissão do formulário principal de atividades
-  function salvarAtividade(event) {
-    event.preventDefault();
+  <!-- TELA DE LOGIN -->
+  <div id="screen-login" class="screen active text-center mt-3">
+    <h3>Acesso ao Sistema</h3>
+    <small class="text-muted">É necessário estar online para o primeiro login</small>
+    <form id="form-login" class="mt-4">
+      <input type="email" id="login-email" class="form-control mb-2" placeholder="E-mail" required>
+      <input type="password" id="login-senha" class="form-control mb-3" placeholder="Senha" required>
+      <button type="submit" class="btn btn-success w-100">Entrar</button>
+    </form>
+  </div>
 
-    const dados = {
-      data: document.getElementById('atv-data').value,
-      solicitante: document.getElementById('atv-solicitante').value,
-      agricultor: document.getElementById('atv-agricultor').value,
-      tipo: document.getElementById('atv-tipo').value,
-      responsavel: document.getElementById('atv-responsavel').value,
-      localidade: document.getElementById('atv-localidade').value,
-      objetivo: document.getElementById('atv-objetivo').value
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="screen-main" class="screen">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 id="user-welcome">Olá!</h5>
+      <button onclick="logout()" class="btn btn-outline-danger btn-sm">Sair</button>
+    </div>
+    
+    <div class="d-grid gap-2 mb-4">
+      <button onclick="showScreen('screen-nova-atividade')" class="btn btn-primary">+ Nova Atividade</button>
+      <button onclick="showScreen('screen-trator')" class="btn btn-warning">Agendar Trator</button>
+      <button onclick="carregarAgricultores()" class="btn btn-info text-white">Agricultores</button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6>Atividades Pendentes Atribuídas</h6>
+      <span id="sync-count" class="badge bg-secondary">Fila Offline: 0</span>
+    </div>
+    <div id="lista-atividades">Carregando...</div>
+  </div>
+
+  <!-- CRIAR ATIVIDADE -->
+  <div id="screen-nova-atividade" class="screen">
+    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4>Nova Atividade</h4>
+    <form id="form-atividade">
+      <input type="date" id="act-data" class="form-control mb-2" required>
+      <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante" required>
+      <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+      <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
+      <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
+      <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
+      <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
+      <button type="submit" class="btn btn-success w-100">Salvar</button>
+    </form>
+  </div>
+
+  <!-- EXECUÇÃO DE ATIVIDADE -->
+  <div id="screen-execucao" class="screen">
+    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4>Concluir Atividade</h4>
+    <form id="form-execucao">
+      <input type="hidden" id="exec-id">
+      <input type="date" id="exec-data" class="form-control mb-2" required>
+      <input type="text" id="exec-tecnicos" class="form-control mb-2" placeholder="Técnicos Presentes" required>
+      <textarea id="exec-atividade" class="form-control mb-2" placeholder="Atividade Realizada" required></textarea>
+      <div class="input-group mb-3">
+        <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
+        <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
+      </div>
+      <button type="submit" class="btn btn-success w-100">Registrar Execução</button>
+    </form>
+  </div>
+
+  <!-- AGENDAMENTO TRATOR -->
+  <div id="screen-trator" class="screen">
+    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4>Agendar / Editar Trator</h4>
+    <form id="form-trator">
+      <input type="hidden" id="trator-id">
+      <input type="text" id="trator-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+      <input type="date" id="trator-data" class="form-control mb-2" required>
+      <input type="text" id="trator-local" class="form-control mb-2" placeholder="Local / Propriedade" required>
+      <input type="number" id="trator-horas" class="form-control mb-2" placeholder="Horas Previstas" required>
+      <textarea id="trator-servico" class="form-control mb-3" placeholder="Serviço a Realizar" required></textarea>
+      <button type="submit" class="btn btn-success w-100">Salvar Agendamento</button>
+    </form>
+  </div>
+
+  <!-- AGRICULTORES -->
+  <div id="screen-agricultores" class="screen">
+    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4>Agricultores</h4>
+    <button onclick="novoAgricultor()" class="btn btn-sm btn-outline-primary mb-3">+ Novo Agricultor</button>
+    <div id="lista-agricultores"></div>
+  </div>
+
+  <!-- FORMULARIO AGRICULTOR -->
+  <div id="screen-form-agricultor" class="screen">
+    <button onclick="showScreen('screen-agricultores')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4 id="agri-form-title">Cadastrar Agricultor</h4>
+    <form id="form-agricultor">
+      <input type="hidden" id="agri-id">
+      <input type="text" id="agri-nome" class="form-control mb-2" placeholder="Nome Completo" required>
+      <input type="text" id="agri-apelido" class="form-control mb-2" placeholder="Apelido">
+      <input type="text" id="agri-caf" class="form-control mb-2" placeholder="Número do CAF">
+      <input type="date" id="agri-datacaf" class="form-control mb-2" placeholder="Data Cadastro CAF">
+      <input type="text" id="agri-localidade" class="form-control mb-2" placeholder="Localidade">
+      <input type="text" id="agri-contacto" class="form-control mb-2" placeholder="Contacto">
+      <input type="text" id="agri-cultivo" class="form-control mb-2" placeholder="Tipo de Cultivo">
+      <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
+      <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
+      <button type="submit" class="btn btn-success w-100">Salvar Dados</button>
+    </form>
+  </div>
+
+  <script>
+    const API_URL = "COLE_SUA_URL_DO_APPS_SCRIPT_AQUI";
+    let currentUser = JSON.parse(localStorage.getItem("user")) || null;
+    let db;
+
+    // --- BANCO DE DADOS LOCAL (IndexedDB) ---
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open("AppAgricolaDB", 1);
+        req.onupgradeneeded = (e) => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains("syncQueue")) {
+            dbInstance.createObjectStore("syncQueue", { keyPath: "autoId", autoIncrement: true });
+          }
+          if (!dbInstance.objectStoreNames.contains("atividades")) {
+            dbInstance.createObjectStore("atividades", { keyPath: "id" });
+          }
+          if (!dbInstance.objectStoreNames.contains("agricultores")) {
+            dbInstance.createObjectStore("agricultores", { keyPath: "id" });
+          }
+        };
+        req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    async function dbOperation(storeName, mode, callback) {
+      const tx = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      return new Promise((resolve) => {
+        const req = callback(store);
+        tx.oncomplete = () => resolve(req ? req.result : true);
+      });
+    }
+
+    // --- EVENTOS E MONITOR DE REDE ---
+    window.addEventListener("online", updateNetworkStatus);
+    window.addEventListener("offline", updateNetworkStatus);
+
+    async function updateNetworkStatus() {
+      const banner = document.getElementById("net-status");
+      if (navigator.onLine) {
+        banner.className = "network-banner online";
+        banner.innerText = "🟢 Conectado - Sincronizando...";
+        await processSyncQueue();
+        banner.innerText = "🟢 Conectado - Sincronizado";
+      } else {
+        banner.className = "network-banner offline";
+        banner.innerText = "🔴 Sem Internet - Modo Offline Ativo";
+      }
+      updateSyncBadge();
+    }
+
+    async function updateSyncBadge() {
+      if (!db) return;
+      const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
+      document.getElementById("sync-count").innerText = `Fila Offline: ${queue.length}`;
+    }
+
+    // --- SERVICE WORKER PARA CACHE ---
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE_NAME = 'app-agricola-v1';
+        self.addEventListener('install', e => {
+          e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'])));
+        });
+        self.addEventListener('fetch', e => {
+          if (e.request.method === 'GET') {
+            e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+          }
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob));
+    }
+
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initDB();
+      updateNetworkStatus();
+      if (currentUser) {
+        iniciarSessao();
+      }
+    });
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    // --- CAMADA DE COMUNICAÇÃO E MODO OFFLINE ---
+    async function apiRequest(payload) {
+      if (navigator.onLine) {
+        try {
+          const resp = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          return await resp.json();
+        } catch (e) {
+          return queueOffline(payload);
+        }
+      } else {
+        return queueOffline(payload);
+      }
+    }
+
+    async function queueOffline(payload) {
+      // Se for consulta de login e estiver offline sem sessão prévia
+      if (payload.action === "login") {
+        return { success: false, message: "Primeiro login requer conexão com a internet." };
+      }
+      // Se for leitura pura, tenta do cache local
+      if (payload.action === "getMinhasAtividades") {
+        const local = await dbOperation("atividades", "readonly", store => store.getAll());
+        return { success: true, data: local.filter(a => a.responsavel === payload.usuario && a.status !== "Concluída") };
+      }
+      if (payload.action === "getAgricultores") {
+        const local = await dbOperation("agricultores", "readonly", store => store.getAll());
+        return { success: true, data: local };
+      }
+
+      // Operações de escrita: adiciona na fila offline
+      await dbOperation("syncQueue", "readwrite", store => store.add({ payload: payload, timestamp: Date.now() }));
+      
+      // Otimismo na UI: atualiza localmente para refletir immediate
+      if (payload.action === "executarAtividade") {
+        const act = await dbOperation("atividades", "readonly", store => store.get(payload.id));
+        if (act) {
+          act.status = "Concluída";
+          await dbOperation("atividades", "readwrite", store => store.put(act));
+        }
+      }
+      if (payload.action === "salvarAgricultor") {
+        const tempObj = { ...payload, id: payload.id || "temp_" + Date.now() };
+        await dbOperation("agricultores", "readwrite", store => store.put(tempObj));
+      }
+
+      updateSyncBadge();
+      return { success: true, offlineQueued: true };
+    }
+
+    async function processSyncQueue() {
+      const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
+      if (queue.length === 0) return;
+
+      for (let item of queue) {
+        try {
+          const resp = await fetch(API_URL, { method: "POST", body: JSON.stringify(item.payload) });
+          const res = await resp.json();
+          if (res.success) {
+            await dbOperation("syncQueue", "readwrite", store => store.delete(item.autoId));
+          }
+        } catch (e) {
+          break; // Para o envio se falhar conexão no meio do processo
+        }
+      }
+      updateSyncBadge();
+      if (currentUser) carregarAtividadesAtribuidas();
+    }
+
+    // --- AUTENTICAÇÃO ---
+    document.getElementById("form-login").onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await apiRequest({
+        action: "login",
+        email: document.getElementById("login-email").value,
+        senha: document.getElementById("login-senha").value
+      });
+      if (res.success) {
+        currentUser = res.user;
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        iniciarSessao();
+      } else {
+        alert(res.message);
+      }
     };
 
-    if (navigator.onLine) {
-      showLoading(true);
-      google.script.run
-        .withSuccessHandler((res) => {
-          showLoading(false);
-          alert('Atividade enviada diretamente ao Google Sheets!');
-        })
-        .salvarAtividadeServidor(dados);
-    } else {
-      salvarOffline(dados);
+    function iniciarSessao() {
+      document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
+      showScreen("screen-main");
+      carregarAtividadesAtribuidas();
     }
-  }
-</script>
+
+    function logout() {
+      localStorage.removeItem("user");
+      currentUser = null;
+      showScreen("screen-login");
+    }
+
+    // --- ATIVIDADES ---
+    async function carregarAtividadesAtribuidas() {
+      const container = document.getElementById("lista-atividades");
+      container.innerHTML = "Buscando...";
+      const res = await apiRequest({ action: "getMinhasAtividades", usuario: currentUser.nome });
+      if (res.success) {
+        // Salva dados baixados no cache IndexedDB
+        if (navigator.onLine && !res.offlineQueued) {
+          for (let item of res.data) {
+            await dbOperation("atividades", "readwrite", store => store.put(item));
+          }
+        }
+        
+        if (res.data.length === 0) {
+          container.innerHTML = "<p class='text-muted'>Nenhuma atividade pendente.</p>";
+          return;
+        }
+        container.innerHTML = res.data.map(item => `
+          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}')">
+            <strong>${item.tipo} - ${item.agricultor}</strong>
+            <small>${item.localidade} | ${item.data}</small>
+            <p class="mb-0 text-truncate">${item.objetivo}</p>
+          </div>
+        `).join('');
+      }
+    }
+
+    function abrirExecucao(id) {
+      document.getElementById("exec-id").value = id;
+      showScreen("screen-execucao");
+    }
+
+    function obterGeolocalizacao() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          document.getElementById("exec-geo").value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+        }, () => {
+          alert("Não foi possível obter a posição GPS offline. Insira manualmente.");
+        }, { enableHighAccuracy: true, timeout: 5000 });
+      } else {
+        alert("Geolocalização não suportada.");
+      }
+    }
+
+    document.getElementById("form-execucao").onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await apiRequest({
+        action: "executarAtividade",
+        id: document.getElementById("exec-id").value,
+        dataExecucao: document.getElementById("exec-data").value,
+        tecnicos: document.getElementById("exec-tecnicos").value,
+        atividadeRealizada: document.getElementById("exec-atividade").value,
+        geolocalizacao: document.getElementById("exec-geo").value
+      });
+      alert(res.offlineQueued ? "Execução salva offline. Será enviada ao reconectar." : "Atividade concluída!");
+      showScreen("screen-main");
+      carregarAtividadesAtribuidas();
+    };
+
+    document.getElementById("form-atividade").onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await apiRequest({
+        action: "criarAtividade",
+        data: document.getElementById("act-data").value,
+        solicitante: document.getElementById("act-solicitante").value,
+        agricultor: document.getElementById("act-agricultor").value,
+        tipo: document.getElementById("act-tipo").value,
+        responsavel: document.getElementById("act-responsavel").value,
+        localidade: document.getElementById("act-localidade").value,
+        objetivo: document.getElementById("act-objetivo").value
+      });
+      alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
+      showScreen("screen-main");
+      carregarAtividadesAtribuidas();
+    };
+
+    // --- TRATOR ---
+    document.getElementById("form-trator").onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await apiRequest({
+        action: "agendarTrator",
+        id: document.getElementById("trator-id").value,
+        agricultor: document.getElementById("trator-agricultor").value,
+        dataServico: document.getElementById("trator-data").value,
+        localPropriedade: document.getElementById("trator-local").value,
+        horasPrevistas: document.getElementById("trator-horas").value,
+        servicoRealizar: document.getElementById("trator-servico").value
+      });
+      alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
+      showScreen("screen-main");
+    };
+
+    // --- AGRICULTORES ---
+    let listaAgricultoresCache = [];
+
+    async function carregarAgricultores() {
+      showScreen("screen-agricultores");
+      const div = document.getElementById("lista-agricultores");
+      div.innerHTML = "Carregando...";
+      const res = await apiRequest({ action: "getAgricultores" });
+      if (res.success) {
+        listaAgricultoresCache = res.data;
+        if (navigator.onLine && !res.offlineQueued) {
+          for (let item of res.data) {
+            await dbOperation("agricultores", "readwrite", store => store.put(item));
+          }
+        }
+        div.innerHTML = res.data.map(ag => `
+          <div class="card p-2 mb-2">
+            <div class="d-flex justify-content-between">
+              <strong>${ag.nomeCompleto} (${ag.apelido || 'S/A'})</strong>
+              <button class="btn btn-sm btn-link" onclick="editarAgricultor('${ag.id}')">Editar</button>
+            </div>
+            <small>CAF: ${ag.numeroCAF} | Tel: ${ag.contacto}</small>
+          </div>
+        `).join('');
+      }
+    }
+
+    function novoAgricultor() {
+      document.getElementById("form-agricultor").reset();
+      document.getElementById("agri-id").value = "";
+      document.getElementById("agri-form-title").innerText = "Cadastrar Agricultor";
+      showScreen("screen-form-agricultor");
+    }
+
+    function editarAgricultor(id) {
+      const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
+      if (!ag) return;
+      document.getElementById("agri-id").value = ag.id;
+      document.getElementById("agri-nome").value = ag.nomeCompleto;
+      document.getElementById("agri-apelido").value = ag.apelido;
+      document.getElementById("agri-caf").value = ag.numeroCAF;
+      document.getElementById("agri-datacaf").value = ag.dataCadastroCAF;
+      document.getElementById("agri-localidade").value = ag.localidade;
+      document.getElementById("agri-contacto").value = ag.contacto;
+      document.getElementById("agri-cultivo").value = ag.tipoCultivo;
+      document.getElementById("agri-terra").value = ag.tamanhoTerra;
+      document.getElementById("agri-obs").value = ag.observacoes;
+      document.getElementById("agri-form-title").innerText = "Alterar Agricultor";
+      showScreen("screen-form-agricultor");
+    }
+
+    document.getElementById("form-agricultor").onsubmit = async (e) => {
+      e.preventDefault();
+      const res = await apiRequest({
+        action: "salvarAgricultor",
+        id: document.getElementById("agri-id").value,
+        nomeCompleto: document.getElementById("agri-nome").value,
+        apelido: document.getElementById("agri-apelido").value,
+        numeroCAF: document.getElementById("agri-caf").value,
+        dataCadastroCAF: document.getElementById("agri-datacaf").value,
+        localidade: document.getElementById("agri-localidade").value,
+        contacto: document.getElementById("agri-contacto").value,
+        tipoCultivo: document.getElementById("agri-cultivo").value,
+        tamanhoTerra: document.getElementById("agri-terra").value,
+        observacoes: document.getElementById("agri-obs").value
+      });
+      alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
+      carregarAgricultores();
+    };
+  </script>
+</body>
+</html>
