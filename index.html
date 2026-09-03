@@ -1,0 +1,39 @@
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2e7d32">
+
+<script src="offline-sync.js"></script>
+<script>
+  // Registro do Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Service Worker Registrado'))
+      .catch((err) => console.error('Erro SW:', err));
+  }
+
+  // Interceptador para a submissão do formulário principal de atividades
+  function salvarAtividade(event) {
+    event.preventDefault();
+
+    const dados = {
+      data: document.getElementById('atv-data').value,
+      solicitante: document.getElementById('atv-solicitante').value,
+      agricultor: document.getElementById('atv-agricultor').value,
+      tipo: document.getElementById('atv-tipo').value,
+      responsavel: document.getElementById('atv-responsavel').value,
+      localidade: document.getElementById('atv-localidade').value,
+      objetivo: document.getElementById('atv-objetivo').value
+    };
+
+    if (navigator.onLine) {
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler((res) => {
+          showLoading(false);
+          alert('Atividade enviada diretamente ao Google Sheets!');
+        })
+        .salvarAtividadeServidor(dados);
+    } else {
+      salvarOffline(dados);
+    }
+  }
+</script>
