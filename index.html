@@ -75,14 +75,37 @@
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
     <h4>Nova Atividade</h4>
     <form id="form-atividade">
-      <input type="date" id="act-data" class="form-control mb-2" required>
-      <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante" required>
-      <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
-      <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
-      <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
-      <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
-      <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
-      <button type="submit" class="btn btn-success w-100">Salvar</button>
+      
+      <div class="form-floating">
+        <input type="date" id="act-data" class="form-control mb-2" required>
+        <label for="act-data">Data</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante" required>
+        <label for="act-solicitante">Solicitante</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+        <label for="act-agricultor">Agricultor</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
+        <label for="act-tipo">Tipo de Atividade</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
+        <label for="act-responsavel">Responsável Principal</label>
+      </div>
+      <div class="form-floating">
+        <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
+        <label for="act-localidade">Localidade</label>
+      </div>
+      <div class="form-floating">
+        <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
+       <label for="act-objetivo">Objetivo</label>
+     </div>
+
+        <button type="submit" class="btn btn-success w-100">Salvar</button>
     </form>
   </div>
 
