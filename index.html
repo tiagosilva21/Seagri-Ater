@@ -333,7 +333,46 @@ if ('serviceWorker' in navigator) {
       updateSyncBadge();
       return { success: true, offlineQueued: true };
     }
+   async function processSyncQueue() {
+  // 1. Busca a fila com a transação de leitura
+  const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
+  if (!queue || queue.length === 0) return;
 
+  for (let item of queue) {
+    try {
+      const resp = await fetch(API_URL, { 
+        method: "POST", 
+        body: JSON.stringify(item.payload) 
+      });
+      const res = await resp.json();
+
+      // 2. Verifica se o envio ao servidor foi bem-sucedido
+      if (res.success) {
+        // Usa item.id (chave primária real gerada pelo IndexedDB)
+        const idParaDeletar = item.id !== undefined ? item.id : item.autoId;
+
+        await dbOperation("syncQueue", "readwrite", store => store.delete(idParaDeletar));
+      }
+    } catch (e) {
+      console.error("Erro ao sincronizar item offline:", e);
+      break; // Interrompe o loop caso perca a conexão no meio
+    }
+  }
+
+  // 3. Atualiza o contador/badge de pendências na interface
+  await updateSyncBadge();
+
+  // 4. Recarrega as listas do sistema para limpar registros temporários/offline da tela
+  if (currentUser) {
+    if (typeof carregarAtividadesAtribuidas === "function") {
+      await carregarAtividadesAtribuidas();
+    }
+    if (typeof carregarAgricultores === "function") {
+      await carregarAgricultores();
+    }
+  }
+   }
+    /*
     async function processSyncQueue() {
       const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
       if (queue.length === 0) return;
@@ -352,7 +391,7 @@ if ('serviceWorker' in navigator) {
       updateSyncBadge();
       if (currentUser) carregarAtividadesAtribuidas();
     }
-
+*/
     // --- AUTENTICAÇÃO ---
     document.getElementById("form-login").onsubmit = async (e) => {
       e.preventDefault();
