@@ -15,7 +15,6 @@
   <meta name="apple-mobile-web-app-title" content="Seagri Ater">
   <link rel="apple-touch-icon" href="planting192.png">
 
-  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #f8f9fa; font-family: sans-serif; padding-top: 50px; }
@@ -27,8 +26,8 @@
       padding: 6px; text-align: center; font-size: 13px; font-weight: bold; z-index: 9999;
     }
     body.offline-mode {
-  overscroll-behavior-y: none;
-  touch-action: pan-x pan-y; /* Limita gestos que forçam reload */
+      overscroll-behavior-y: none;
+      touch-action: pan-x pan-y; /* Limita gestos que forçam reload */
     }
     .online { background-color: #d1e7dd; color: #0f5132; }
     .offline { background-color: #f8d7da; color: #842029; }
@@ -59,7 +58,7 @@
     
     <div class="d-grid gap-2 mb-4">
       <button onclick="showScreen('screen-nova-atividade')" class="btn btn-primary">+ Nova Atividade</button>
-      <button onclick="showScreen('screen-trator')" class="btn btn-warning">Agendar Trator</button>
+      <button onclick="carregarAgendamentosTrator()" class="btn btn-warning">Agendamentos de Trator</button>
       <button onclick="carregarAgricultores()" class="btn btn-info text-white">Agricultores</button>
     </div>
 
@@ -102,10 +101,10 @@
       </div>
       <div class="form-floating">
         <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
-       <label for="act-objetivo">Objetivo</label>
-     </div>
+        <label for="act-objetivo">Objetivo</label>
+      </div>
 
-        <button type="submit" class="btn btn-success w-100">Salvar</button>
+      <button type="submit" class="btn btn-success w-100">Salvar</button>
     </form>
   </div>
 
@@ -115,19 +114,19 @@
     <h4>Concluir Atividade</h4>
     <form id="form-execucao">
       <div class="form-floating">
-      <input type="hidden" id="exec-id">
+        <input type="hidden" id="exec-id">
         <input type="date" id="exec-data" class="form-control mb-2" required>
         <label for="exec-data">Data</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="exec-tecnicos" class="form-control mb-2" placeholder="Técnicos Presentes" required>
+        <input type="text" id="exec-tecnicos" class="form-control mb-2" placeholder="Técnicos Presentes" required>
         <label for="exec-tecnicos">Técnicos Presentes</label>
       </div>
       <div class="form-floating">
-      <textarea id="exec-atividade" class="form-control mb-2" placeholder="Atividade Realizada" required></textarea>
+        <textarea id="exec-atividade" class="form-control mb-2" placeholder="Atividade Realizada" required></textarea>
         <label for="exec-atividade">Atividade Realizada</label>
       </div>
-     
+      
       <div class="input-group mb-3">
         <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
         <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
@@ -136,32 +135,49 @@
     </form>
   </div>
 
-  <!-- AGENDAMENTO TRATOR -->
-  <div id="screen-trator" class="screen">
+  <!-- TELA LISTA TRATOR (MÊS) -->
+  <div id="screen-lista-trator" class="screen">
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4>Agendar / Editar Trator</h4>
+    <h4>Agendamentos de Trator</h4>
+    
+    <div class="row g-2 mb-3 align-items-center">
+      <div class="col-8">
+        <input type="month" id="filtro-mes-trator" class="form-control" onchange="carregarAgendamentosTrator()">
+      </div>
+      <div class="col-4">
+        <button onclick="novoAgendamentoTrator()" class="btn btn-warning w-100 btn-sm">+ Novo</button>
+      </div>
+    </div>
+
+    <div id="lista-agendamentos-trator">Carregando...</div>
+  </div>
+
+  <!-- AGENDAMENTO TRATOR (FORMULÁRIO) -->
+  <div id="screen-trator" class="screen">
+    <button onclick="showScreen('screen-lista-trator')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
+    <h4 id="trator-form-title">Agendar / Editar Trator</h4>
     <form id="form-trator">
       <input type="hidden" id="trator-id">
-       
+        
       <div class="form-floating">
-      <input type="text" id="trator-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
-        <label for="exec-tecnicos">Técnicos Presentes</label>
+        <input type="text" id="trator-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+        <label for="trator-agricultor">Agricultor</label>
       </div>
       <div class="form-floating">
-      <input type="date" id="trator-data" class="form-control mb-2" required>
+        <input type="date" id="trator-data" class="form-control mb-2" required>
         <label for="trator-data">Data</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="trator-local" class="form-control mb-2" placeholder="Local / Propriedade" required>
+        <input type="text" id="trator-local" class="form-control mb-2" placeholder="Local / Propriedade" required>
         <label for="trator-local">Local / Propriedade</label>
       </div>
       <div class="form-floating">
-      <input type="number" id="trator-horas" class="form-control mb-2" placeholder="Horas Previstas" required>
+        <input type="number" id="trator-horas" class="form-control mb-2" placeholder="Horas Previstas" required>
         <label for="trator-horas">Horas Previstas</label>
       </div>
       <div class="form-floating">
-      <textarea id="trator-servico" class="form-control mb-3" placeholder="Serviço a Realizar" required></textarea>
-        <label for="trator-servico">Serviço a Realiza</label>
+        <textarea id="trator-servico" class="form-control mb-3" placeholder="Serviço a Realizar" required></textarea>
+        <label for="trator-servico">Serviço a Realizar</label>
       </div>
     
       <button type="submit" class="btn btn-success w-100">Salvar Agendamento</button>
@@ -184,39 +200,39 @@
       <input type="hidden" id="agri-id">
         
       <div class="form-floating">
-      <input type="text" id="agri-nome" class="form-control mb-2" placeholder="Nome Completo" required>
+        <input type="text" id="agri-nome" class="form-control mb-2" placeholder="Nome Completo" required>
         <label for="agri-nome">Nome Completo</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="agri-apelido" class="form-control mb-2" placeholder="Apelido">
+        <input type="text" id="agri-apelido" class="form-control mb-2" placeholder="Apelido">
         <label for="agri-apelido">Apelido</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="agri-caf" class="form-control mb-2" placeholder="Número do CAF">
+        <input type="text" id="agri-caf" class="form-control mb-2" placeholder="Número do CAF">
         <label for="agri-caf">Número do CAF</label>
       </div>
       <div class="form-floating">
-      <input type="date" id="agri-datacaf" class="form-control mb-2" placeholder="Data Cadastro CAF">
+        <input type="date" id="agri-datacaf" class="form-control mb-2" placeholder="Data Cadastro CAF">
         <label for="agri-datacaf">Data Cadastro CAF</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="agri-localidade" class="form-control mb-2" placeholder="Localidade">
+        <input type="text" id="agri-localidade" class="form-control mb-2" placeholder="Localidade">
         <label for="agri-localidade">Localidade</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="agri-contacto" class="form-control mb-2" placeholder="Contacto">
+        <input type="text" id="agri-contacto" class="form-control mb-2" placeholder="Contacto">
         <label for="agri-contacto">Contacto</label>
       </div>
       <div class="form-floating">
-      <input type="text" id="agri-cultivo" class="form-control mb-2" placeholder="Tipo de Cultivo">
+        <input type="text" id="agri-cultivo" class="form-control mb-2" placeholder="Tipo de Cultivo">
         <label for="agri-cultivo">Tipo de Cultivo</label>
       </div>
       <div class="form-floating">
-      <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
+        <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
         <label for="agri-terra">Tamanho da Terra (ha)</label>
       </div>
       <div class="form-floating">
-      <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
+        <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
         <label for="agri-obs">Observações</label>
       </div>
       <button type="submit" class="btn btn-success w-100">Salvar Dados</button>
@@ -227,11 +243,12 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzCnUtzeoXtVmA8SfOdffNqSCDm_PGp74-O8RA7RS4F2-Ix7AnnHN3kF5m3SBG7wc_-gw/exec";
     let currentUser = JSON.parse(localStorage.getItem("user")) || null;
     let db;
+    let listaTratorCache = [];
 
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open("AppAgricolaDB", 1);
+        const req = indexedDB.open("AppAgricolaDB", 2); // Versão incrementada para suportar a tabela de trator
         req.onupgradeneeded = (e) => {
           const dbInstance = e.target.result;
           if (!dbInstance.objectStoreNames.contains("syncQueue")) {
@@ -242,6 +259,9 @@
           }
           if (!dbInstance.objectStoreNames.contains("agricultores")) {
             dbInstance.createObjectStore("agricultores", { keyPath: "id" });
+          }
+          if (!dbInstance.objectStoreNames.contains("trator")) {
+            dbInstance.createObjectStore("trator", { keyPath: "id" });
           }
         };
         req.onsuccess = (e) => { db = e.target.result; resolve(db); };
@@ -261,7 +281,6 @@
     // --- EVENTOS E MONITOR DE REDE ---
     window.addEventListener("online", updateNetworkStatus);
     window.addEventListener("offline", updateNetworkStatus);
-
 
     async function updateNetworkStatus() {
       const banner = document.getElementById("net-status");
@@ -285,70 +304,53 @@
       document.getElementById("sync-count").innerText = `Fila Offline: ${queue.length}`;
     }
 
-    // --- SERVICE WORKER PARA CACHE ---
-   /* if ('serviceWorker' in navigator) {
+    // --- SERVICE WORKER PARA CACHE E PWA ---
+    if ('serviceWorker' in navigator) {
       const swCode = `
-        const CACHE_NAME = 'app-agricola-v1';
+        const CACHE_NAME = 'app-agricola-v2';
+        const ASSETS = [
+          './',
+          './index.html',
+          './manifest.json',
+          './planting192.png',
+          './planting512.png',
+          'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
+        ];
+
         self.addEventListener('install', e => {
-          e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'])));
+          e.waitUntil(
+            caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+          );
         });
+
         self.addEventListener('fetch', e => {
           if (e.request.method === 'GET') {
-            e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+            e.respondWith(
+              caches.match(e.request).then(res => res || fetch(e.request))
+            );
+          }
+          if (event.request.mode === 'navigate') {
+            event.respondWith(
+              fetch(event.request).catch(() => {
+                return caches.match(event.request) || caches.match('/offline.html');
+              })
+            );
           }
         });
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
-*/
-// --- SERVICE WORKER PARA CACHE E PWA ---
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE_NAME = 'app-agricola-v2';
-    const ASSETS = [
-      './',
-      './index.html',
-      './manifest.json',
-      './planting192.png',
-      './planting512.png',
-      'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
-    ];
-
-    self.addEventListener('install', e => {
-      e.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
-      );
-    });
-
-    self.addEventListener('fetch', e => {
-      if (e.request.method === 'GET') {
-        e.respondWith(
-          caches.match(e.request).then(res => res || fetch(e.request))
-        );
-      }
-      if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        // Se estiver offline e o fetch falhar, busca a página no cache
-        return caches.match(event.request) || caches.match('/offline.html');
-      })
-    );
-  }
-    });
-    
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  navigator.serviceWorker.register(URL.createObjectURL(blob));
-}
-
-
-
-    
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     document.addEventListener("DOMContentLoaded", async () => {
       await initDB();
+      
+      // Define valor inicial do filtro do mês para o mês atual (YYYY-MM)
+      const hoje = new Date();
+      const mesAtual = hoje.toISOString().slice(0, 7);
+      document.getElementById("filtro-mes-trator").value = mesAtual;
+
       updateNetworkStatus();
       if (currentUser) {
         iniciarSessao();
@@ -360,9 +362,6 @@ if ('serviceWorker' in navigator) {
       document.getElementById(screenId).classList.add('active');
       if(screenId == "screen-nova-atividade"){
         document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
-      }
-      if(screenId == "screen-execucao"){
-        document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
       }
       if(screenId == "screen-execucao"){
         document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
@@ -387,11 +386,9 @@ if ('serviceWorker' in navigator) {
     }
 
     async function queueOffline(payload) {
-      // Se for consulta de login e estiver offline sem sessão prévia
       if (payload.action === "login") {
         return { success: false, message: "Primeiro login requer conexão com a internet." };
       }
-      // Se for leitura pura, tenta do cache local
       if (payload.action === "getMinhasAtividades") {
         const local = await dbOperation("atividades", "readonly", store => store.getAll());
         return { success: true, data: local.filter(a => a.responsavel === payload.usuario && a.status !== "Concluída") };
@@ -400,11 +397,14 @@ if ('serviceWorker' in navigator) {
         const local = await dbOperation("agricultores", "readonly", store => store.getAll());
         return { success: true, data: local };
       }
+      if (payload.action === "getAgendamentosTrator") {
+        const local = await dbOperation("trator", "readonly", store => store.getAll());
+        return { success: true, data: local };
+      }
 
       // Operações de escrita: adiciona na fila offline
       await dbOperation("syncQueue", "readwrite", store => store.add({ payload: payload, timestamp: Date.now() }));
       
-      // Otimismo na UI: atualiza localmente para refletir immediate
       if (payload.action === "executarAtividade") {
         const act = await dbOperation("atividades", "readonly", store => store.get(payload.id));
         if (act) {
@@ -416,69 +416,52 @@ if ('serviceWorker' in navigator) {
         const tempObj = { ...payload, id: payload.id || "temp_" + Date.now() };
         await dbOperation("agricultores", "readwrite", store => store.put(tempObj));
       }
+      if (payload.action === "agendarTrator") {
+        const tempObj = { ...payload, id: payload.id || "temp_" + Date.now() };
+        await dbOperation("trator", "readwrite", store => store.put(tempObj));
+      }
 
       updateSyncBadge();
       return { success: true, offlineQueued: true };
     }
-   async function processSyncQueue() {
-  // 1. Busca a fila com a transação de leitura
-  const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
-  if (!queue || queue.length === 0) return;
 
-  for (let item of queue) {
-    try {
-      const resp = await fetch(API_URL, { 
-        method: "POST", 
-        body: JSON.stringify(item.payload) 
-      });
-      const res = await resp.json();
-
-      // 2. Verifica se o envio ao servidor foi bem-sucedido
-      if (res.success) {
-        // Usa item.id (chave primária real gerada pelo IndexedDB)
-        const idParaDeletar = item.id !== undefined ? item.id : item.autoId;
-
-        await dbOperation("syncQueue", "readwrite", store => store.delete(idParaDeletar));
-      }
-    } catch (e) {
-      console.error("Erro ao sincronizar item offline:", e);
-      break; // Interrompe o loop caso perca a conexão no meio
-    }
-  }
-
-  // 3. Atualiza o contador/badge de pendências na interface
-  await updateSyncBadge();
-
-  // 4. Recarrega as listas do sistema para limpar registros temporários/offline da tela
-  if (currentUser) {
-    if (typeof carregarAtividadesAtribuidas === "function") {
-      await carregarAtividadesAtribuidas();
-    }
-    if (typeof carregarAgricultores === "function") {
-      await carregarAgricultores();
-    }
-  }
-   }
-    /*
     async function processSyncQueue() {
       const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
-      if (queue.length === 0) return;
+      if (!queue || queue.length === 0) return;
 
       for (let item of queue) {
         try {
-          const resp = await fetch(API_URL, { method: "POST", body: JSON.stringify(item.payload) });
+          const resp = await fetch(API_URL, { 
+            method: "POST", 
+            body: JSON.stringify(item.payload) 
+          });
           const res = await resp.json();
+
           if (res.success) {
-            await dbOperation("syncQueue", "readwrite", store => store.delete(item.autoId));
+            const idParaDeletar = item.id !== undefined ? item.id : item.autoId;
+            await dbOperation("syncQueue", "readwrite", store => store.delete(idParaDeletar));
           }
         } catch (e) {
-          break; // Para o envio se falhar conexão no meio do processo
+          console.error("Erro ao sincronizar item offline:", e);
+          break;
         }
       }
-      updateSyncBadge();
-      if (currentUser) carregarAtividadesAtribuidas();
+
+      await updateSyncBadge();
+
+      if (currentUser) {
+        if (typeof carregarAtividadesAtribuidas === "function") {
+          await carregarAtividadesAtribuidas();
+        }
+        if (typeof carregarAgricultores === "function") {
+          await carregarAgricultores();
+        }
+        if (typeof carregarAgendamentosTrator === "function") {
+          await carregarAgendamentosTrator();
+        }
+      }
     }
-*/
+
     // --- AUTENTICAÇÃO ---
     document.getElementById("form-login").onsubmit = async (e) => {
       e.preventDefault();
@@ -514,7 +497,6 @@ if ('serviceWorker' in navigator) {
       container.innerHTML = "Buscando...";
       const res = await apiRequest({ action: "getMinhasAtividades", usuario: currentUser.nome });
       if (res.success) {
-        // Salva dados baixados no cache IndexedDB
         if (navigator.onLine && !res.offlineQueued) {
           for (let item of res.data) {
             await dbOperation("atividades", "readwrite", store => store.put(item));
@@ -584,7 +566,76 @@ if ('serviceWorker' in navigator) {
       carregarAtividadesAtribuidas();
     };
 
-    // --- TRATOR ---
+    // --- TRATOR (LISTAGEM E EDIÇÃO) ---
+    async function carregarAgendamentosTrator() {
+      showScreen("screen-lista-trator");
+      const div = document.getElementById("lista-agendamentos-trator");
+      div.innerHTML = "Carregando...";
+
+      const mesFiltro = document.getElementById("filtro-mes-trator").value; // Formato YYYY-MM
+      const res = await apiRequest({ action: "getAgendamentosTrator" });
+
+      if (res.success) {
+        listaTratorCache = res.data || [];
+
+        if (navigator.onLine && !res.offlineQueued) {
+          for (let item of res.data) {
+            await dbOperation("trator", "readwrite", store => store.put(item));
+          }
+        }
+
+        // Filtra pelo mês selecionado na interface
+        const agendamentosFiltrados = listaTratorCache.filter(item => {
+          if (!item.dataServico) return false;
+          return item.dataServico.substring(0, 7) === mesFiltro;
+        });
+
+        if (agendamentosFiltrados.length === 0) {
+          div.innerHTML = "<p class='text-muted'>Nenhum agendamento encontrado para este mês.</p>";
+          return;
+        }
+
+        div.innerHTML = agendamentosFiltrados.map(item => `
+          <div class="card card-item p-3 mb-2">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <strong>${item.agricultor}</strong>
+                <div><small>🗓️ ${item.dataServico} | 📍 ${item.localPropriedade}</small></div>
+                <div><small>⏱️ ${item.horasPrevistas} hora(s)</small></div>
+                <small class="text-secondary">${item.servicoRealizar}</small>
+              </div>
+              <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        div.innerHTML = "<p class='text-danger'>Erro ao carregar agendamentos.</p>";
+      }
+    }
+
+    function novoAgendamentoTrator() {
+      document.getElementById("form-trator").reset();
+      document.getElementById("trator-id").value = "";
+      document.getElementById("trator-data").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("trator-form-title").innerText = "Agendar Trator";
+      showScreen("screen-trator");
+    }
+
+    function editarAgendamentoTrator(id) {
+      const item = listaTratorCache.find(t => String(t.id) === String(id));
+      if (!item) return;
+
+      document.getElementById("trator-id").value = item.id;
+      document.getElementById("trator-agricultor").value = item.agricultor || "";
+      document.getElementById("trator-data").value = item.dataServico ? item.dataServico.substring(0, 10) : "";
+      document.getElementById("trator-local").value = item.localPropriedade || "";
+      document.getElementById("trator-horas").value = item.horasPrevistas || "";
+      document.getElementById("trator-servico").value = item.servicoRealizar || "";
+
+      document.getElementById("trator-form-title").innerText = "Editar Agendamento Trator";
+      showScreen("screen-trator");
+    }
+
     document.getElementById("form-trator").onsubmit = async (e) => {
       e.preventDefault();
       const res = await apiRequest({
@@ -597,7 +648,7 @@ if ('serviceWorker' in navigator) {
         servicoRealizar: document.getElementById("trator-servico").value
       });
       alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
-      showScreen("screen-main");
+      carregarAgendamentosTrator();
     };
 
     // --- AGRICULTORES ---
