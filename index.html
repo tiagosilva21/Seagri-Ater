@@ -26,6 +26,10 @@
       position: fixed; top: 0; left: 0; right: 0;
       padding: 6px; text-align: center; font-size: 13px; font-weight: bold; z-index: 9999;
     }
+    body.offline-mode {
+  overscroll-behavior-y: none;
+  touch-action: pan-x pan-y; /* Limita gestos que forçam reload */
+    }
     .online { background-color: #d1e7dd; color: #0f5132; }
     .offline { background-color: #f8d7da; color: #842029; }
   </style>
@@ -180,16 +184,19 @@
     window.addEventListener("online", updateNetworkStatus);
     window.addEventListener("offline", updateNetworkStatus);
 
+
     async function updateNetworkStatus() {
       const banner = document.getElementById("net-status");
       if (navigator.onLine) {
         banner.className = "network-banner online";
         banner.innerText = "🟢 Conectado - Sincronizando...";
         await processSyncQueue();
+        document.body.classList.add('offline-mode');
         banner.innerText = "🟢 Conectado - Sincronizado";
       } else {
         banner.className = "network-banner offline";
         banner.innerText = "🔴 Sem Internet - Modo Offline Ativo";
+        document.body.classList.remove('offline-mode');
       }
       updateSyncBadge();
     }
@@ -242,7 +249,16 @@ if ('serviceWorker' in navigator) {
           caches.match(e.request).then(res => res || fetch(e.request))
         );
       }
+      if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Se estiver offline e o fetch falhar, busca a página no cache
+        return caches.match(event.request) || caches.match('/offline.html');
+      })
+    );
+  }
     });
+    
   `;
   const blob = new Blob([swCode], { type: 'application/javascript' });
   navigator.serviceWorker.register(URL.createObjectURL(blob));
