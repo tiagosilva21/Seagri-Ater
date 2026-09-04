@@ -114,10 +114,20 @@
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
     <h4>Concluir Atividade</h4>
     <form id="form-execucao">
+      <div class="form-floating">
       <input type="hidden" id="exec-id">
-      <input type="date" id="exec-data" class="form-control mb-2" required>
+        <input type="date" id="exec-data" class="form-control mb-2" required>
+        <label for="exec-data">Data</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="exec-tecnicos" class="form-control mb-2" placeholder="Técnicos Presentes" required>
+        <label for="exec-tecnicos">Técnicos Presentes</label>
+      </div>
+      <div class="form-floating">
       <textarea id="exec-atividade" class="form-control mb-2" placeholder="Atividade Realizada" required></textarea>
+        <label for="exec-atividade">Atividade Realizada</label>
+      </div>
+     
       <div class="input-group mb-3">
         <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
         <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
@@ -132,11 +142,28 @@
     <h4>Agendar / Editar Trator</h4>
     <form id="form-trator">
       <input type="hidden" id="trator-id">
+       
+      <div class="form-floating">
       <input type="text" id="trator-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+        <label for="exec-tecnicos">Técnicos Presentes</label>
+      </div>
+      <div class="form-floating">
       <input type="date" id="trator-data" class="form-control mb-2" required>
+        <label for="trator-data">Data</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="trator-local" class="form-control mb-2" placeholder="Local / Propriedade" required>
+        <label for="trator-local">Local / Propriedade</label>
+      </div>
+      <div class="form-floating">
       <input type="number" id="trator-horas" class="form-control mb-2" placeholder="Horas Previstas" required>
+        <label for="trator-horas">Horas Previstas</label>
+      </div>
+      <div class="form-floating">
       <textarea id="trator-servico" class="form-control mb-3" placeholder="Serviço a Realizar" required></textarea>
+        <label for="trator-servico">Serviço a Realiza</label>
+      </div>
+    
       <button type="submit" class="btn btn-success w-100">Salvar Agendamento</button>
     </form>
   </div>
@@ -155,15 +182,43 @@
     <h4 id="agri-form-title">Cadastrar Agricultor</h4>
     <form id="form-agricultor">
       <input type="hidden" id="agri-id">
+        
+      <div class="form-floating">
       <input type="text" id="agri-nome" class="form-control mb-2" placeholder="Nome Completo" required>
+        <label for="agri-nome">Nome Completo</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="agri-apelido" class="form-control mb-2" placeholder="Apelido">
+        <label for="agri-apelido">Apelido</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="agri-caf" class="form-control mb-2" placeholder="Número do CAF">
+        <label for="agri-caf">Número do CAF</label>
+      </div>
+      <div class="form-floating">
       <input type="date" id="agri-datacaf" class="form-control mb-2" placeholder="Data Cadastro CAF">
+        <label for="agri-datacaf">Data Cadastro CAF</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="agri-localidade" class="form-control mb-2" placeholder="Localidade">
+        <label for="agri-localidade">Localidade</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="agri-contacto" class="form-control mb-2" placeholder="Contacto">
+        <label for="agri-contacto">Contacto</label>
+      </div>
+      <div class="form-floating">
       <input type="text" id="agri-cultivo" class="form-control mb-2" placeholder="Tipo de Cultivo">
+        <label for="agri-cultivo">Tipo de Cultivo</label>
+      </div>
+      <div class="form-floating">
       <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
+        <label for="agri-terra">Tamanho da Terra (ha)</label>
+      </div>
+      <div class="form-floating">
       <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
+        <label for="agri-obs">Observações</label>
+      </div>
       <button type="submit" class="btn btn-success w-100">Salvar Dados</button>
     </form>
   </div>
@@ -303,6 +358,15 @@ if ('serviceWorker' in navigator) {
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
+      if(screenId == "screen-nova-atividade"){
+        document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
+      }
+      if(screenId == "screen-execucao"){
+        document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
+      }
+      if(screenId == "screen-execucao"){
+        document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
+      }
     }
 
     // --- CAMADA DE COMUNICAÇÃO E MODO OFFLINE ---
