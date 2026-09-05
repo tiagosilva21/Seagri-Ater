@@ -586,8 +586,8 @@
 
         // Filtra pelo mês selecionado na interface
         const agendamentosFiltrados = listaTratorCache.filter(item => {
-          if (!item.dataServico) return false;
-          return item.dataServico.substring(0, 7) === mesFiltro;
+          if (!item.data) return false;
+          return item.data.substring(0, 7) === mesFiltro;
         });
 
         if (agendamentosFiltrados.length === 0) {
@@ -627,7 +627,7 @@
 
       document.getElementById("trator-id").value = item.id;
       document.getElementById("trator-agricultor").value = item.agricultor || "";
-      document.getElementById("trator-data").value = item.dataServico ? item.dataServico.substring(0, 10) : "";
+      document.getElementById("trator-data").value = item.data ? item.data.substring(0, 10) : "";
       document.getElementById("trator-local").value = item.localPropriedade || "";
       document.getElementById("trator-horas").value = item.horasPrevistas || "";
       document.getElementById("trator-servico").value = item.servicoRealizar || "";
