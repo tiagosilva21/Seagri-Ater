@@ -748,7 +748,7 @@ function renderizarListaAgricultores(lista) {
   div.innerHTML = lista.map(ag => `
     <div class="card p-2 mb-2">
       <div class="d-flex justify-content-between align-items-center">
-        <strong>${ag.nomeCompleto || ag.nome} (${ag.apelido || 'S/A'})</strong>
+        <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
         <div class="d-flex align-items-center gap-2">
           ${ag.gps ? `
             <small>
@@ -759,7 +759,7 @@ function renderizarListaAgricultores(lista) {
           <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
         </div>
       </div>
-      <small class="text-secondary">CAF: ${ag.numeroCAF || ag.caf || 'N/A'} | Tel: ${ag.contacto || ag.contato || 'N/A'}</small>
+      <small class="text-secondary">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
     </div>
   `).join('');
 }
@@ -774,10 +774,10 @@ function filtrarAgricultores() {
   }
 
   const filtrados = listaAgricultoresCache.filter(ag => {
-    const nome = (ag.nomeCompleto || ag.nome || '').toLowerCase();
+    const nome = (ag.nome || '').toLowerCase();
     const apelido = (ag.apelido || '').toLowerCase();
-    const caf = (ag.numeroCAF || ag.caf || '').toLowerCase();
-    const contato = (ag.contacto || ag.contato || '').toLowerCase();
+    const caf = (ag.caf || '').toLowerCase();
+    const contato = (ag.contato || '').toLowerCase();
 
     return nome.includes(termo) || 
            apelido.includes(termo) || 
