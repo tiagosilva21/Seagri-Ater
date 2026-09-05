@@ -678,10 +678,10 @@
         div.innerHTML = res.data.map(ag => `
           <div class="card p-2 mb-2">
             <div class="d-flex justify-content-between">
-              <strong>${ag.nomeCompleto} (${ag.apelido || 'S/A'})</strong>
+              <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
               <button class="btn btn-sm btn-link" onclick="editarAgricultor('${ag.id}')">Editar</button>
             </div>
-            <small>CAF: ${ag.numeroCAF} | Tel: ${ag.contacto}</small>
+            <small>CAF: ${ag.caf} | Tel: ${ag.contato}</small>
           </div>
         `).join('');
       }
@@ -698,15 +698,15 @@
       const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
       if (!ag) return;
       document.getElementById("agri-id").value = ag.id;
-      document.getElementById("agri-nome").value = ag.nomeCompleto;
+      document.getElementById("agri-nome").value = ag.nome;
       document.getElementById("agri-apelido").value = ag.apelido;
-      document.getElementById("agri-caf").value = ag.numeroCAF;
-      document.getElementById("agri-datacaf").value = ag.dataCadastroCAF;
+      document.getElementById("agri-caf").value = ag.caf;
+      document.getElementById("agri-datacaf").value = ag.cafData;
       document.getElementById("agri-localidade").value = ag.localidade;
-      document.getElementById("agri-contacto").value = ag.contacto;
-      document.getElementById("agri-cultivo").value = ag.tipoCultivo;
-      document.getElementById("agri-terra").value = ag.tamanhoTerra;
-      document.getElementById("agri-obs").value = ag.observacoes;
+      document.getElementById("agri-contacto").value = ag.contato;
+      document.getElementById("agri-cultivo").value = ag.cultivo;
+      document.getElementById("agri-terra").value = ag.terra;
+      document.getElementById("agri-obs").value = ag.obs;
       document.getElementById("agri-form-title").innerText = "Alterar Agricultor";
       showScreen("screen-form-agricultor");
     }
@@ -716,15 +716,15 @@
       const res = await apiRequest({
         action: "salvarAgricultor",
         id: document.getElementById("agri-id").value,
-        nomeCompleto: document.getElementById("agri-nome").value,
+        nome: document.getElementById("agri-nome").value,
         apelido: document.getElementById("agri-apelido").value,
-        numeroCAF: document.getElementById("agri-caf").value,
-        dataCadastroCAF: document.getElementById("agri-datacaf").value,
+        caf: document.getElementById("agri-caf").value,
+        cafData: document.getElementById("agri-datacaf").value,
         localidade: document.getElementById("agri-localidade").value,
-        contacto: document.getElementById("agri-contacto").value,
-        tipoCultivo: document.getElementById("agri-cultivo").value,
-        tamanhoTerra: document.getElementById("agri-terra").value,
-        observacoes: document.getElementById("agri-obs").value
+        contato: document.getElementById("agri-contacto").value,
+        cultivo: document.getElementById("agri-cultivo").value,
+        terrs: document.getElementById("agri-terra").value,
+        obs: document.getElementById("agri-obs").value
       });
       alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
       carregarAgricultores();
