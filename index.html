@@ -628,9 +628,9 @@
       document.getElementById("trator-id").value = item.id;
       document.getElementById("trator-agricultor").value = item.agricultor || "";
       document.getElementById("trator-data").value = item.data ? item.data.substring(0, 10) : "";
-      document.getElementById("trator-local").value = item.localPropriedade || "";
-      document.getElementById("trator-horas").value = item.horasPrevistas || "";
-      document.getElementById("trator-servico").value = item.servicoRealizar || "";
+      document.getElementById("trator-local").value = item.local || "";
+      document.getElementById("trator-horas").value = item.horas || "";
+      document.getElementById("trator-servico").value = item.servico || "";
 
       document.getElementById("trator-form-title").innerText = "Editar Agendamento Trator";
       showScreen("screen-trator");
@@ -642,10 +642,10 @@
         action: "agendarTrator",
         id: document.getElementById("trator-id").value,
         agricultor: document.getElementById("trator-agricultor").value,
-        dataServico: document.getElementById("trator-data").value,
-        localPropriedade: document.getElementById("trator-local").value,
-        horasPrevistas: document.getElementById("trator-horas").value,
-        servicoRealizar: document.getElementById("trator-servico").value
+        data: document.getElementById("trator-data").value,
+        local: document.getElementById("trator-local").value,
+        horas: document.getElementById("trator-horas").value,
+        servico: document.getElementById("trator-servico").value
       });
       alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
       carregarAgendamentosTrator();
