@@ -231,6 +231,10 @@
         <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
         <label for="agri-terra">Tamanho da Terra (ha)</label>
       </div>
+      <div class="input-group mb-3">
+        <input type="text" id="agri-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
+        <button type="button" onclick="obterGeolocalizacaoAgri()" class="btn btn-outline-secondary">GPS</button>
+      </div>
       <div class="form-floating">
         <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
         <label for="agri-obs">Observações</label>
@@ -537,7 +541,19 @@
         alert("Geolocalização não suportada.");
       }
     }
-
+  
+    function obterGeolocalizacaoAgri() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          document.getElementById("agri-geo").value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+        }, () => {
+          alert("Não foi possível obter a posição GPS offline. Insira manualmente.");
+        }, { enableHighAccuracy: true, timeout: 5000 });
+      } else {
+        alert("Geolocalização não suportada.");
+      }
+    }
+    
     document.getElementById("form-execucao").onsubmit = async (e) => {
       e.preventDefault();
       const res = await apiRequest({
@@ -679,6 +695,10 @@
           <div class="card p-2 mb-2">
             <div class="d-flex justify-content-between">
               <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
+              <small>
+              <b>GPS: </b> 
+              <a href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+              </small>
               <button class="btn btn-sm btn-link" onclick="editarAgricultor('${ag.id}')">Editar</button>
             </div>
             <small>CAF: ${ag.caf} | Tel: ${ag.contato}</small>
@@ -706,6 +726,7 @@
       document.getElementById("agri-contacto").value = ag.contato;
       document.getElementById("agri-cultivo").value = ag.cultivo;
       document.getElementById("agri-terra").value = ag.terra;
+      document.getElementById("agri-geo").value = ag.gps,
       document.getElementById("agri-obs").value = ag.obs;
       document.getElementById("agri-form-title").innerText = "Alterar Agricultor";
       showScreen("screen-form-agricultor");
@@ -723,7 +744,8 @@
         localidade: document.getElementById("agri-localidade").value,
         contato: document.getElementById("agri-contacto").value,
         cultivo: document.getElementById("agri-cultivo").value,
-        terrs: document.getElementById("agri-terra").value,
+        terra: document.getElementById("agri-terra").value,
+        gps: document.getElementById("agri-geo").value,
         obs: document.getElementById("agri-obs").value
       });
       alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
