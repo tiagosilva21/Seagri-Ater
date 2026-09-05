@@ -753,10 +753,10 @@ function renderizarListaAgricultores(lista) {
           ${ag.gps ? `
             <small>
                
-              <a class="btn btn-sm btn-outline-danger p-0 text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+              <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
             </small>
           ` : ''}
-          <button class="btn btn-sm btn-outline-primary p-0 text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
+          <button class="btn btn-sm btn-outline-primary text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
         </div>
       </div>
       <small class="text-secondary">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
