@@ -306,6 +306,10 @@
 
     // --- SERVICE WORKER PARA CACHE E PWA ---
     if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .catch(err => console.log('Erro ao registrar SW:', err));
+}
+   /* if ('serviceWorker' in navigator) {
       const swCode = `
         const CACHE_NAME = 'app-agricola-v2';
         const ASSETS = [
@@ -340,7 +344,7 @@
       `;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob));
-    }
+    }*/
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     document.addEventListener("DOMContentLoaded", async () => {
@@ -595,8 +599,8 @@
           return;
         }
         console.log(agendamentosFiltrados.length);
-        div.innerHTML = agendamentosFiltrados.map(item =>
-         // const dataFormatada = item.data.split('-').reverse().join('/');
+        div.innerHTML = agendamentosFiltrados.map(item => {
+         
           const dataFormatada = item.data ? item.data.split('-').reverse().join('/') : '';
           return `
           <div class="card card-item p-3 mb-2">
@@ -610,7 +614,8 @@
               <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
             </div>
           </div>
-        `;).join('');
+        `;
+      }).join('');
       } else {
         div.innerHTML = "<p class='text-danger'>Erro ao carregar agendamentos.</p>";
       }
