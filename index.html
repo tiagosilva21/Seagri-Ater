@@ -189,7 +189,7 @@
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
     <h4>Agricultores</h4>
     <div class="d-flex gap-2 mb-3">
-        <input type="text" id="busca-agricultor" class="form-control" placeholder="Pesquisar por nome, apelido, CAF ou tel..." oninput="filtrarAgricultores()">
+        <input type="text" id="busca-agricultor" class="form-control" placeholder="Pesquisar por nome ou apelido" oninput="filtrarAgricultores()">
     <button onclick="novoAgricultor()" class="btn btn-primary text-nowrap">+ Novo</button>
   </div>
     <!--button onclick="novoAgricultor()" class="btn btn-sm btn-outline-primary mb-3">+ Novo Agricultor</button-->
@@ -752,8 +752,8 @@ function renderizarListaAgricultores(lista) {
         <div class="d-flex align-items-center gap-2">
           ${ag.gps ? `
             <small>
-              <b>GPS: </b> 
-              <a href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+               
+              <a class="btn btn-sm btn-link p-0 text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
             </small>
           ` : ''}
           <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
@@ -776,13 +776,11 @@ function filtrarAgricultores() {
   const filtrados = listaAgricultoresCache.filter(ag => {
     const nome = (ag.nome || '').toLowerCase();
     const apelido = (ag.apelido || '').toLowerCase();
-    const caf = (ag.caf || '').toLowerCase();
-    const contato = (ag.contato || '').toLowerCase();
+    //const caf = (ag.caf || '').toLowerCase();
+  //  const contato = (ag.contato || '').toLowerCase();
 
     return nome.includes(termo) || 
-           apelido.includes(termo) || 
-           caf.includes(termo) || 
-           contato.includes(termo);
+           apelido.includes(termo);
   });
 
   renderizarListaAgricultores(filtrados);
