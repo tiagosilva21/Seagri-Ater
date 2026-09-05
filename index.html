@@ -594,7 +594,7 @@
           div.innerHTML = "<p class='text-muted'>Nenhum agendamento encontrado para este mês.</p>";
           return;
         }
-
+        console.log(agendamentosFiltrados.length);
         div.innerHTML = agendamentosFiltrados.map(item => `
           <div class="card card-item p-3 mb-2">
             <div class="d-flex justify-content-between align-items-start">
