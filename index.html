@@ -596,8 +596,8 @@
         }
         console.log(agendamentosFiltrados.length);
         div.innerHTML = agendamentosFiltrados.map(item =>
-          const dataFormatada = item.data.split('-').reverse().join('/');
-
+         // const dataFormatada = item.data.split('-').reverse().join('/');
+          const dataFormatada = item.data ? item.data.split('-').reverse().join('/') : '';
           return `
           <div class="card card-item p-3 mb-2">
             <div class="d-flex justify-content-between align-items-start">
