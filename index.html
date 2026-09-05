@@ -647,6 +647,7 @@
         horas: document.getElementById("trator-horas").value,
         servico: document.getElementById("trator-servico").value
       });
+      console.log(document.getElementById("trator-data").value);
       alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
       carregarAgendamentosTrator();
     };
