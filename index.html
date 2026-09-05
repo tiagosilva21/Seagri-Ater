@@ -188,7 +188,11 @@
   <div id="screen-agricultores" class="screen">
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
     <h4>Agricultores</h4>
-    <button onclick="novoAgricultor()" class="btn btn-sm btn-outline-primary mb-3">+ Novo Agricultor</button>
+    <div class="d-flex gap-2 mb-3">
+        <input type="text" id="busca-agricultor" class="form-control" placeholder="Pesquisar por nome, apelido, CAF ou tel..." oninput="filtrarAgricultores()">
+    <button onclick="novoAgricultor()" class="btn btn-primary text-nowrap">+ Novo</button>
+  </div>
+    <!--button onclick="novoAgricultor()" class="btn btn-sm btn-outline-primary mb-3">+ Novo Agricultor</button-->
     <div id="lista-agricultores"></div>
   </div>
 
@@ -677,7 +681,7 @@
     };
 
     // --- AGRICULTORES ---
-    let listaAgricultoresCache = [];
+   /* let listaAgricultoresCache = [];
 
     async function carregarAgricultores() {
       showScreen("screen-agricultores");
@@ -705,8 +709,84 @@
           </div>
         `).join('');
       }
-    }
+    }*/
+let listaAgricultoresCache = [];
 
+async function carregarAgricultores() {
+  showScreen("screen-agricultores");
+  const div = document.getElementById("lista-agricultores");
+  div.innerHTML = "Carregando...";
+  
+  // Limpa o campo de busca ao recarregar a tela
+  document.getElementById("busca-agricultor").value = "";
+
+  const res = await apiRequest({ action: "getAgricultores" });
+  if (res.success) {
+    listaAgricultoresCache = res.data || [];
+    
+    if (navigator.onLine && !res.offlineQueued) {
+      for (let item of res.data) {
+        await dbOperation("agricultores", "readwrite", store => store.put(item));
+      }
+    }
+    
+    renderizarListaAgricultores(listaAgricultoresCache);
+  } else {
+    div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
+  }
+}
+
+// Renderiza o HTML com base no array recebido
+function renderizarListaAgricultores(lista) {
+  const div = document.getElementById("lista-agricultores");
+  
+  if (lista.length === 0) {
+    div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
+    return;
+  }
+
+  div.innerHTML = lista.map(ag => `
+    <div class="card p-2 mb-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <strong>${ag.nomeCompleto || ag.nome} (${ag.apelido || 'S/A'})</strong>
+        <div class="d-flex align-items-center gap-2">
+          ${ag.gps ? `
+            <small>
+              <b>GPS: </b> 
+              <a href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+            </small>
+          ` : ''}
+          <button class="btn btn-sm btn-link p-0 text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
+        </div>
+      </div>
+      <small class="text-secondary">CAF: ${ag.numeroCAF || ag.caf || 'N/A'} | Tel: ${ag.contacto || ag.contato || 'N/A'}</small>
+    </div>
+  `).join('');
+}
+
+// Filtra a lista em memória sem precisar refazer requisição API
+function filtrarAgricultores() {
+  const termo = document.getElementById("busca-agricultor").value.toLowerCase().trim();
+
+  if (!termo) {
+    renderizarListaAgricultores(listaAgricultoresCache);
+    return;
+  }
+
+  const filtrados = listaAgricultoresCache.filter(ag => {
+    const nome = (ag.nomeCompleto || ag.nome || '').toLowerCase();
+    const apelido = (ag.apelido || '').toLowerCase();
+    const caf = (ag.numeroCAF || ag.caf || '').toLowerCase();
+    const contato = (ag.contacto || ag.contato || '').toLowerCase();
+
+    return nome.includes(termo) || 
+           apelido.includes(termo) || 
+           caf.includes(termo) || 
+           contato.includes(termo);
+  });
+
+  renderizarListaAgricultores(filtrados);
+}
     function novoAgricultor() {
       document.getElementById("form-agricultor").reset();
       document.getElementById("agri-id").value = "";
