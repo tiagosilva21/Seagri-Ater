@@ -598,7 +598,7 @@
         div.innerHTML = agendamentosFiltrados.map(item =>
           const dataFormatada = item.data.split('-').reverse().join('/');
 
-          return`
+          return `
           <div class="card card-item p-3 mb-2">
             <div class="d-flex justify-content-between align-items-start">
               <div>
@@ -610,7 +610,7 @@
               <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
             </div>
           </div>
-        `).join('');
+        `;).join('');
       } else {
         div.innerHTML = "<p class='text-danger'>Erro ao carregar agendamentos.</p>";
       }
