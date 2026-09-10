@@ -84,9 +84,9 @@
         <label for="act-solicitante">Solicitante</label>
       </div>
       <div class="form-floating">
-        <!--input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required-->
+        <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
         <label for="act-agricultor">Agricultor</label>
-        <input 
+        <!--input 
     type="text" 
     id="act-agricultor" 
     class="form-control" 
@@ -95,19 +95,19 @@
     autocomplete="off" 
     required
   >
-  <!-- Datalist alimentado via IndexedDB/API -->
-  <datalist id="dl-agricultores"></datalist>
+  <!-- Datalist alimentado via IndexedDB/API >
+  <datalist id="dl-agricultores"></datalist-->
       </div>
       <div class="form-floating">
         <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
         <label for="act-tipo">Tipo de Atividade</label>
       </div>
       <div class="form-floating">
-        <!--input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required-->
+        <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
         <label for="act-responsavel">Responsável Principal</label>
-     <select id="act-responsavel" class="form-select" required>
+     <!--select id="act-responsavel" class="form-select" required>
     <option value="">Carregando opções...</option>
-     </select>
+      </select-->
       </div>
       <div class="form-floating">
         <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
@@ -343,7 +343,7 @@ async function queueOffline(payload) {
 }
 
 // --- FUNÇÃO PARA CARREGAR OS RESPONSÁVEIS (ABA USUÁRIOS) ---
-async function carregarUsuariosResponsáveis() {
+/*async function carregarUsuariosResponsáveis() {
   const select = document.getElementById("act-responsavel");
   if (!select) return;
 
@@ -385,7 +385,7 @@ async function carregarDataListAgricultores() {
     ).join('');
   }
 }
-
+*/
 // --- ATUALIZAÇÃO DO ABRIR TELA DE NOVA ATIVIDADE ---
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
