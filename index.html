@@ -84,16 +84,23 @@
         <label for="act-solicitante">Solicitante</label>
       </div>
       <div class="form-floating">
-        <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+        <input type="text" id="act-agricultor" class="form-control mb-2" list="datalist-agricultores" placeholder="Agricultor" required>
         <label for="act-agricultor">Agricultor</label>
+        
+        <datalist id="datalist-agricultores">
+          <!-- Preenchido via JavaScript -->
+        </datalist>
       </div>
       <div class="form-floating">
         <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
         <label for="act-tipo">Tipo de Atividade</label>
       </div>
       <div class="form-floating">
-        <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
+        <!--input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required-->
         <label for="act-responsavel">Responsável Principal</label>
+        <select class="form-select  mb-2" id="act-responsavel" required>
+          <option value="">Carregando responsáveis...</option>
+        </select>
       </div>
       <div class="form-floating">
         <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
@@ -271,6 +278,9 @@
           if (!dbInstance.objectStoreNames.contains("trator")) {
             dbInstance.createObjectStore("trator", { keyPath: "id" });
           }
+          if (!dbInstance.objectStoreNames.contains("usuarios")) {
+            dbInstance.createObjectStore("usuarios", { keyPath: "id" }); // Armazenará os usuários do sistema
+          }
         };
         req.onsuccess = (e) => { db = e.target.result; resolve(db); };
         req.onerror = (e) => reject(e);
@@ -369,11 +379,23 @@
       }
     });
 
-    function showScreen(screenId) {
+    /*function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
       if(screenId == "screen-nova-atividade"){
         document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
+      }
+      if(screenId == "screen-execucao"){
+        document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
+      }
+    }
+*/
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      
+      if(screenId == "screen-nova-atividade"){
+        prepararTelaNovaAtividade(); // Substitui o comportamento antigo
       }
       if(screenId == "screen-execucao"){
         document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
@@ -829,6 +851,77 @@ function filtrarAgricultores() {
       alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
       carregarAgricultores();
     };
+
+    // Função para carregar opções dinâmicas ao abrir a tela de Nova Atividade
+    async function prepararTelaNovaAtividade() {
+      showScreen('screen-nova-atividade');
+      document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
+      
+      await carregarOpcoesAgricultoresDatalist();
+      await carregarOpcoesUsuariosSelect();
+    }
+
+    // 1. Preenche o Datalist de Agricultores (Online + Offline via IndexedDB)
+    async function carregarOpcoesAgricultoresDatalist() {
+      const datalist = document.getElementById("datalist-agricultores");
+      let agricultores = [];
+
+      try {
+        // Tenta buscar da API se estiver online
+        if (navigator.onLine) {
+          const res = await apiRequest({ action: "getAgricultores" });
+          if (res.success && res.data) {
+            agricultores = res.data;
+            // Atualiza o cache local
+            for (let item of res.data) {
+              await dbOperation("agricultores", "readwrite", store => store.put(item));
+            }
+          }
+        }
+      } catch (err) {
+        console.log("Erro ao buscar agricultores online, usando cache local...", err);
+      }
+
+      // Se falhou ou está offline, busca do IndexedDB
+      if (agricultores.length === 0) {
+        agricultores = await dbOperation("agricultores", "readonly", store => store.getAll()) || [];
+      }
+
+      // Renderiza as opções no datalist
+      datalist.innerHTML = agricultores.map(ag => `<option value="${ag.nome}"></option>`).join('');
+    }
+
+    // 2. Preenche o Select de Usuários/Responsáveis (Online + Offline via IndexedDB)
+    async function carregarOpcoesUsuariosSelect() {
+      const select = document.getElementById("act-responsavel");
+      let usuarios = [];
+
+      try {
+        if (navigator.onLine) {
+          const res = await apiRequest({ action: "getUsuarios" }); // Certifique-se de que sua API/Apps Script possui essa action
+          if (res.success && res.data) {
+            usuarios = res.data;
+            for (let item of res.data) {
+              await dbOperation("usuarios", "readwrite", store => store.put(item));
+            }
+          }
+        }
+      } catch (err) {
+        console.log("Erro ao buscar usuários online, usando cache local...", err);
+      }
+
+      if (usuarios.length === 0) {
+        usuarios = await dbOperation("usuarios", "readonly", store => store.getAll()) || [];
+      }
+
+      if (usuarios.length === 0) {
+        select.innerHTML = `<option value="">Nenhum usuário encontrado</option>`;
+        return;
+      }
+
+      select.innerHTML = `<option value="">Selecione o responsável...</option>` + 
+        usuarios.map(u => `<option value="${u.nome}">${u.nome}</option>`).join('');
+    }
   </script>
 </body>
 </html>
