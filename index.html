@@ -57,7 +57,7 @@
     </div>
     
     <div class="d-grid gap-2 mb-4">
-      <button onclick="showScreen('screen-nova-atividade')" class="btn btn-primary">+ Nova Atividade</button>
+      <button onclick="carregarAgricultoresNovaAtividade()" class="btn btn-primary">+ Nova Atividade</button><!-- showScreen('screen-nova-atividade')-->
       <button onclick="carregarAgendamentosTrator()" class="btn btn-warning">Agendamentos de Trator</button>
       <button onclick="carregarAgricultores()" class="btn btn-info text-white">Agricultores</button>
     </div>
@@ -84,8 +84,11 @@
         <label for="act-solicitante">Solicitante</label>
       </div>
       <div class="form-floating">
-        <input type="text" id="act-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
+        <input type="text" id="act-agricultor" list="datalist-agricultores" class="form-control mb-2" placeholder="Agricultor" required>
         <label for="act-agricultor">Agricultor</label>
+        <datalist id="datalist-agricultores">
+          <!-- Preenchido via JavaScript -->
+        </datalist>
       </div>
       <div class="form-floating">
         <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
@@ -829,6 +832,42 @@ function filtrarAgricultores() {
       alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
       carregarAgricultores();
     };
+
+    //CARREGAR AGRICULTORES NO SCREEM NOVA ATIVIDADE
+    async function carregarAgricultoresNovaAtividade() {
+  showScreen("screen-nova-atividade");
+  const div = document.getElementById("datalist-agricultores");
+  //div.innerHTML = "Carregando...";
+  
+  // Limpa o campo de busca ao recarregar a tela
+  //document.getElementById("busca-agricultor").value = "";
+
+ /* const res = await apiRequest({ action: "getAgricultores" });
+  if (res.success) {
+    listaAgricultoresCache = res.data || [];
+    
+    if (navigator.onLine && !res.offlineQueued) {
+      for (let item of res.data) {
+        await dbOperation("agricultores", "readwrite", store => store.put(item));
+      }
+    }*/
+    
+    renderizarListaAgricultoresNovaAtividade(listaAgricultoresCache);
+  /*} else {
+    div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
+    datalistTrator.innerHTML += `<option value="${a.nome}">${a.nome} - ${a.localidade}</option>`;
+  }*/
+}
+    function renderizarListaAgricultoresNovaAtividade(lista) {
+  const div = document.getElementById("datalist-agricultores");
+  
+  if (lista.length === 0) {
+    div.innerHTML = "";
+    return;
+  }
+
+  div.innerHTML = lista.map(ag => `<option value="${ag.nome}">${ag.nome}</option>`).join('');
+}
   </script>
 </body>
 </html>
