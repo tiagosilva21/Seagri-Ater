@@ -854,7 +854,7 @@ function filtrarAgricultores() {
 
     // Função para carregar opções dinâmicas ao abrir a tela de Nova Atividade
     async function prepararTelaNovaAtividade() {
-      showScreen('screen-nova-atividade');
+      //showScreen('screen-nova-atividade');
       document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
       
       await carregarOpcoesAgricultoresDatalist();
@@ -922,6 +922,30 @@ function filtrarAgricultores() {
       select.innerHTML = `<option value="">Selecione o responsável...</option>` + 
         usuarios.map(u => `<option value="${u.nome}">${u.nome}</option>`).join('');
     }
+
+/*    async function carregarAgricultores() {
+  showScreen("screen-nova-atividade");
+  const div = document.getElementById("lista-agricultores");
+  div.innerHTML = "Carregando...";
+  
+  // Limpa o campo de busca ao recarregar a tela
+  document.getElementById("busca-agricultor").value = "";
+
+  const res = await apiRequest({ action: "getAgricultores" });
+  if (res.success) {
+    listaAgricultoresCache = res.data || [];
+    
+    if (navigator.onLine && !res.offlineQueued) {
+      for (let item of res.data) {
+        await dbOperation("agricultores", "readwrite", store => store.put(item));
+      }
+    }
+    
+    renderizarListaAgricultores(listaAgricultoresCache);
+  } else {
+    div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
+  }
+}*/
   </script>
 </body>
 </html>
