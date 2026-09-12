@@ -423,6 +423,10 @@
         const local = await dbOperation("trator", "readonly", store => store.getAll());
         return { success: true, data: local };
       }
+      if (payload.action === "getUsuarios") {
+        const local = await dbOperation("usuarios", "readonly", store => store.getAll());
+        return { success: true, data: local };
+      }
 
       // Operações de escrita: adiciona na fila offline
       await dbOperation("syncQueue", "readwrite", store => store.add({ payload: payload, timestamp: Date.now() }));
