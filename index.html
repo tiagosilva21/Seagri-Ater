@@ -262,7 +262,7 @@
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open("AppAgricolaDB", 2); // Versão incrementada para suportar a tabela de trator
+        const req = indexedDB.open("AppAgricolaDB", 3); // Versão incrementada para suportar a tabela de trator
         req.onupgradeneeded = (e) => {
           const dbInstance = e.target.result;
           if (!dbInstance.objectStoreNames.contains("syncQueue")) {
