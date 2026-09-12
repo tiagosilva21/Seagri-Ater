@@ -920,7 +920,7 @@ function filtrarAgricultores() {
     return;
   }
 
-  div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.id}')" value="${ag.nome}">${ag.nome}</option>`).join('');
+  div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.gps}')" value="${ag.nome}">${ag.nome}</option>`).join('');
 }
 
     // Função auxiliar para gerenciar estado de salvando
@@ -985,6 +985,7 @@ function verificarExibirBotaoMapa(gps) {
     function inputGpsAtividade(id){
       const idGps = document.getElementById('idgps');
       idGps.value = String(id);
+      console.log(id);
     }
     
     function verificarExibirBotaoMapa(geolocalizacao) {
