@@ -784,6 +784,7 @@ async function carregarAgricultores() {
 
   div.innerHTML = lista.map(ag => `
     <option value="${ag.nome}">${ag.nome}</option>
+    console.log(${ag.gps})
   `).join('');
 }
     
