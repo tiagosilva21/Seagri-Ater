@@ -59,7 +59,7 @@
     <div class="d-grid gap-2 mb-4">
       <button onclick="carregarAgricultoresNovaAtividade()" class="btn btn-primary">+ Nova Atividade</button><!-- showScreen('screen-nova-atividade')-->
       <button onclick="carregarAgendamentosTrator()" class="btn btn-warning">Agendamentos de Trator</button>
-      <button onclick="carregarAgricultores()" class="btn btn-info text-white">Agricultores</button>
+      <button onclick="telaAgricultores()" class="btn btn-info text-white">Agricultores</button>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -498,6 +498,7 @@
       document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
+      carregarAgricultores();
     }
 
     function logout() {
@@ -715,8 +716,13 @@
     }*/
 let listaAgricultoresCache = [];
 
+    function telaAgricultores(){
+       showScreen("screen-agricultores");
+      carregarAgricultores();
+    }
+    
 async function carregarAgricultores() {
-  showScreen("screen-agricultores");
+ 
   const div = document.getElementById("lista-agricultores");
   div.innerHTML = "Carregando...";
   
