@@ -110,7 +110,7 @@ button:disabled {
       <h6>Atividades Pendentes Atribuídas</h6>
       <span id="sync-count" class="badge bg-secondary">Fila Offline: 0</span>
     </div>
-    <div id="lista-atividades">Carregando...</div>
+    <div id="">Carregando...</div>
   </div>
 
   <!-- CRIAR ATIVIDADE -->
@@ -561,7 +561,7 @@ button:disabled {
           return;
         }
         container.innerHTML = res.data.map(item => `
-          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}')">
+          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarEExibirBotaoMapa('${item.agricultor}')">
             <strong>${item.tipo} - ${item.agricultor}</strong>
             <small>${item.localidade} | ${item.data}</small>
             <p class="mb-0 text-truncate">${item.objetivo}</p>
