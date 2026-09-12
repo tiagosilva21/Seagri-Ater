@@ -474,11 +474,18 @@
       document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
       
       document.getElementById("act-solicitante").innerText = `${currentUser.nome}`;
-        let t = `${currentUser.perfil}`;
-      console.log(t);
-      if( t == "Trator"){
-        let trator =  document.getElementById("btn-trator");
-        trator.classList.remove('d-none');
+      
+      let perfilUsuario = currentUser.perfil ? currentUser.perfil.trim().toLowerCase() : "";
+      console.log("Perfil logado:", perfilUsuario);
+
+      let btnTrator = document.getElementById("btn-trator");
+      
+      if (btnTrator) {
+        if (perfilUsuario === "trator") {
+          btnTrator.classList.remove('d-none'); // Mostra se for Trator
+        } else {
+          btnTrator.classList.add('d-none');    // Garante que some para qualquer outro perfil
+        }
       }
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
@@ -670,46 +677,11 @@
       carregarAgendamentosTrator();
     };
 
-    // --- AGRICULTORES ---
-   /* let listaAgricultoresCache = [];
-
-    async function carregarAgricultores() {
-      showScreen("screen-agricultores");
-      const div = document.getElementById("lista-agricultores");
-      div.innerHTML = "Carregando...";
-      const res = await apiRequest({ action: "getAgricultores" });
-      if (res.success) {
-        listaAgricultoresCache = res.data;
-        if (navigator.onLine && !res.offlineQueued) {
-          for (let item of res.data) {
-            await dbOperation("agricultores", "readwrite", store => store.put(item));
-          }
-        }
-        div.innerHTML = res.data.map(ag => `
-          <div class="card p-2 mb-2">
-            <div class="d-flex justify-content-between">
-              <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
-              <small>
-              <b>GPS: </b> 
-              <a href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
-              </small>
-              <button class="btn btn-sm btn-link" onclick="editarAgricultor('${ag.id}')">Editar</button>
-            </div>
-            <small>CAF: ${ag.caf} | Tel: ${ag.contato}</small>
-          </div>
-        `).join('');
-      }
-    }*/
+   
 let listaAgricultoresCache = [];
 let listaUsuariosCache = [];
     async function carregarUsuarios() {
  
- // const div = document.getElementById("lista-agricultores");
- // div.innerHTML = "Carregando...";
-  
-  // Limpa o campo de busca ao recarregar a tela
-//  document.getElementById("busca-agricultor").value = "";
-
   const res = await apiRequest({ action: "getUsuarios" });
   if (res.success) {
     listaUsuariosCache = res.data || [];
