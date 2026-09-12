@@ -31,6 +31,50 @@
     }
     .online { background-color: #d1e7dd; color: #0f5132; }
     .offline { background-color: #f8d7da; color: #842029; }
+    /* Animação do Spinner nos botões */
+.btn-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Estado desabilitado durante o envio */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Botão Ver no Mapa */
+.btn-ver-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0284c7;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-ver-mapa:hover {
+  background-color: #0369a1;
+}
   </style>
 </head>
 <body>
@@ -867,6 +911,101 @@ function filtrarAgricultores() {
 
   div.innerHTML = lista.map(ag => `<option value="${ag.nome}">${ag.nome}</option>`).join('');
 }
+
+    // Função auxiliar para gerenciar estado de salvando
+function setButtonLoading(button, isLoading, originalText = 'Salvar') {
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = `<span class="btn-spinner"></span> Salvando...`;
+  } else {
+    button.disabled = false;
+    button.innerHTML = button.dataset.originalText || originalText;
+  }
+}
+
+// Configuração dos formulários das 4 telas solicitadas
+const formIDs = [
+  'form-nova-atividade', // screen-nova-atividade
+  'form-execucao',       // screen-execucao
+  'form-trator',         // screen-trator
+  'form-agricultor'      // screen-form-agricultor
+];
+
+formIDs.forEach(formId => {
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  form.addEventListener('submit', async function (event) {
+    // Previne comportamento padrão caso não seja manipulado por AJAX/IndexedDB
+    const submitBtn = form.querySelector('button[type="submit"]') || form.querySelector('.btn-submit');
+    
+    if (submitBtn) {
+      setButtonLoading(submitBtn, true);
+      
+      // Caso seu envio seja assíncrono (ex: salvar no IndexedDB ou API)
+      try {
+        // Exemplo: await salvarDados();
+        // setTimeout simula a conclusão do salvamento
+        setTimeout(() => {
+          setButtonLoading(submitBtn, false);
+        }, 1500);
+      } catch (error) {
+        setButtonLoading(submitBtn, false);
+      }
+    }
+  });
+});
+    /**
+ * Renderiza o botão 'Ver no Mapa' na tela de execução caso haja GPS
+ * @param {Object} agricultor Dados do agricultor selecionado/cadastrado
+ */
+function verificarEExibirBotaoMapa(agricultor) {
+  const container = document.querySelector('#screen-execucao .info-agricultor-container') 
+                 || document.getElementById('screen-execucao');
+  
+  // Remove botão anterior caso exista
+  const btnExistente = document.getElementById('btn-ver-mapa-execucao');
+  if (btnExistente) btnExistente.remove();
+
+  // Verifica se o agricultor está cadastrado e possui coordenadas VÁLIDAS
+  const temGps = agricultor && 
+                 agricultor.cadastrado && 
+                 ((agricultor.latitude && agricultor.longitude) || agricultor.gps);
+
+  if (temGps) {
+    const lat = agricultor.latitude || (agricultor.gps ? agricultor.gps.lat : null);
+    const lng = agricultor.longitude || (agricultor.gps ? agricultor.gps.lng : null);
+
+    if (lat && lng) {
+      const btnMapa = document.createElement('a');
+      btnMapa.id = 'btn-ver-mapa-execucao';
+      btnMapa.className = 'btn-ver-mapa';
+      btnMapa.target = '_blank';
+      btnMapa.rel = 'noopener noreferrer';
+      btnMapa.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      btnMapa.innerHTML = `
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        </svg>
+        Ver no Mapa
+      `;
+
+      // Insere o botão próximo aos dados do agricultor na tela de execução
+      container.appendChild(btnMapa);
+    }
+  }
+}
+
+// Exemplo de integração ao selecionar um agricultor no screen-execucao:
+/* 
+  const agricultorAtual = {
+    cadastrado: true,
+    latitude: -12.9714,
+    longitude: -38.5014
+  };
+  verificarEExibirBotaoMapa(agricultorAtual);
+*/
   </script>
 </body>
 </html>
