@@ -977,7 +977,7 @@ function verificarExibirBotaoMapa(gps) {
 }*/
     function verificarExibirBotaoMapa(gps) {
     const containerMaps = document.getElementById('maps');
-    
+    console.log(gps);
     if (!containerMaps) return;
 
     if (gps && gps.trim() !== "") {
