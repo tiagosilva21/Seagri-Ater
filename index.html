@@ -277,6 +277,10 @@
           if (!dbInstance.objectStoreNames.contains("trator")) {
             dbInstance.createObjectStore("trator", { keyPath: "id" });
           }
+          
+          if (!dbInstance.objectStoreNames.contains("usuarios")) {
+            dbInstance.createObjectStore("usuarios", { keyPath: "id" });
+          }
         };
         req.onsuccess = (e) => { db = e.target.result; resolve(db); };
         req.onerror = (e) => reject(e);
