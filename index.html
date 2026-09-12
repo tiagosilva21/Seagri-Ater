@@ -508,6 +508,7 @@
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
       carregarAgricultores();
+      carregarUsuarios();
      // carregarAgricultoresNovaAtividade();
     }
 
@@ -737,7 +738,7 @@ let listaUsuariosCache = [];
   const res = await apiRequest({ action: "getUsuarios" });
   if (res.success) {
     listaUsuariosCache = res.data || [];
-    
+    console.log(res.data);
     if (navigator.onLine && !res.offlineQueued) {
       for (let item of res.data) {
         await dbOperation("usuarios", "readwrite", store => store.put(item));
