@@ -967,12 +967,15 @@ formIDs.forEach(formId => {
 function verificarExibirBotaoMapa(gps) {
   
   
-     document.getElementById('maps').innerHTML = ? `
+     document.getElementById('maps').innerHTML = ${gps ? `
             <small>
                
               <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
             </small>
           ` : ''}
+ 
+}
+  
  /* const container = document.querySelector('#screen-execucao .info-agricultor-container') 
                  || document.getElementById('screen-execucao');
   
