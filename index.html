@@ -565,7 +565,7 @@ button:disabled {
           return;
         }
         container.innerHTML = res.data.map(item => `
-          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.gps}');">
+          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.agricultor}');">
             <strong>${item.tipo} - ${item.agricultor}</strong>
             <small>${item.localidade} | ${item.data}</small>
             <p class="mb-0 text-truncate">${item.objetivo}</p>
@@ -975,12 +975,14 @@ function verificarExibirBotaoMapa(gps) {
           ` : ''};
  
 }*/
-    function verificarExibirBotaoMapa(gps) {
+    function verificarExibirBotaoMapa(agricultor) {
     const containerMaps = document.getElementById('maps');
-    console.log(gps);
+    console.log(agricultor);
     if (!containerMaps) return;
-
-    if (gps && gps.trim() !== "") {
+    
+      const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
+      if (!ag) return;
+    if (ag.gps && ag.gps.trim() !== "") {
         containerMaps.innerHTML = `
             <small>
                 <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
