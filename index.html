@@ -58,7 +58,7 @@
     
     <div class="d-grid gap-2 mb-4">
       <button onclick="carregarAgricultoresNovaAtividade()" class="btn btn-primary">+ Nova Atividade</button><!-- showScreen('screen-nova-atividade')-->
-      <button onclick="carregarAgendamentosTrator()" class="btn btn-warning">Agendamentos de Trator</button>
+      <button onclick="carregarAgendamentosTrator()" id="btn-trator" class="btn btn-warning d-none">Agendamentos de Trator</button>
       <button onclick="telaAgricultores()" class="btn btn-info text-white">Agricultores</button>
     </div>
 
@@ -79,8 +79,8 @@
         <input type="date" id="act-data" class="form-control mb-2" required>
         <label for="act-data">Data</label>
       </div>
-      <div class="form-floating">
-        <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante" required>
+      <div class="form-floating d-none">
+        <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante"  required>
         <label for="act-solicitante">Solicitante</label>
       </div>
       <div class="form-floating">
@@ -95,8 +95,11 @@
         <label for="act-tipo">Tipo de Atividade</label>
       </div>
       <div class="form-floating">
-        <input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required>
+        <!--input type="text" id="act-responsavel" class="form-control mb-2" placeholder="Responsável Principal" required-->
         <label for="act-responsavel">Responsável Principal</label>
+        <select class="form-select  mb-2" id="act-responsavel" required>
+          <!--option value="">Carregando responsáveis...</option-->
+        </select>
       </div>
       <div class="form-floating">
         <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade" required>
@@ -496,9 +499,16 @@
 
     function iniciarSessao() {
       document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
+      
+      document.getElementById("act-solicitante").innerText = `${currentUser.nome}`;
+      if(`${currentUser.perfil}` == "Trator"){
+        let trator =  document.getElementById("btn-trator");
+        trator.classList.remove('d.none');
+      }
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
       carregarAgricultores();
+     // carregarAgricultoresNovaAtividade();
     }
 
     function logout() {
@@ -715,6 +725,28 @@
       }
     }*/
 let listaAgricultoresCache = [];
+let listaUsuariosCache = [];
+    async function carregarUsuarios() {
+ 
+ // const div = document.getElementById("lista-agricultores");
+ // div.innerHTML = "Carregando...";
+  
+  // Limpa o campo de busca ao recarregar a tela
+//  document.getElementById("busca-agricultor").value = "";
+
+  const res = await apiRequest({ action: "getUsuarios" });
+  if (res.success) {
+    listaUsuariosCache = res.data || [];
+    
+    if (navigator.onLine && !res.offlineQueued) {
+      for (let item of res.data) {
+        await dbOperation("usuarios", "readwrite", store => store.put(item));
+      }
+    }
+    
+    renderizarListaUsuarios(listaUsuariosCache);
+  } 
+}
 
     function telaAgricultores(){
        showScreen("screen-agricultores");
@@ -746,6 +778,19 @@ async function carregarAgricultores() {
 }
 
 // Renderiza o HTML com base no array recebido
+    function renderizarListaUsuarios(lista) {
+  const div = document.getElementById("act-responsavel");
+  
+  if (lista.length === 0) {
+   // div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
+    return;
+  }
+
+  div.innerHTML = lista.map(ag => `
+    <option value="${ag.nome}">${ag.nome}</option>
+  `).join('');
+}
+    
 function renderizarListaAgricultores(lista) {
   const div = document.getElementById("lista-agricultores");
   
