@@ -340,12 +340,7 @@
       updateNetworkStatus();
       if (currentUser) {
         iniciarSessao();
-         let t = `${currentUser.perfil}`;
-      console.log(t);
-      if( t == "Trator"){
-        let trator =  document.getElementById("btn-trator");
-        trator.classList.remove('d-none');
-      }
+        
       }
     });
 
@@ -479,7 +474,12 @@
       document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
       
       document.getElementById("act-solicitante").innerText = `${currentUser.nome}`;
-     
+        let t = `${currentUser.perfil}`;
+      console.log(t);
+      if( t == "Trator"){
+        let trator =  document.getElementById("btn-trator");
+        trator.classList.remove('d-none');
+      }
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
       carregarAgricultores();
