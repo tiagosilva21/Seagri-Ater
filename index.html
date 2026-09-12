@@ -180,6 +180,10 @@ button:disabled {
         <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
         <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
       </div>
+       <div class="form-floating" id="maps">
+        
+      </div>
+       
       <button type="submit" class="btn btn-success w-100">Registrar Execução</button>
     </form>
   </div>
@@ -561,7 +565,7 @@ button:disabled {
           return;
         }
         container.innerHTML = res.data.map(item => `
-          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarEExibirBotaoMapa('${item.agricultor}')">
+          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.gps}');">
             <strong>${item.tipo} - ${item.agricultor}</strong>
             <small>${item.localidade} | ${item.data}</small>
             <p class="mb-0 text-truncate">${item.objetivo}</p>
@@ -960,8 +964,16 @@ formIDs.forEach(formId => {
  * Renderiza o botão 'Ver no Mapa' na tela de execução caso haja GPS
  * @param {Object} agricultor Dados do agricultor selecionado/cadastrado
  */
-function verificarEExibirBotaoMapa(agricultor) {
-  const container = document.querySelector('#screen-execucao .info-agricultor-container') 
+function verificarExibirBotaoMapa(gps) {
+  
+  
+     document.getElementById('maps').innerHTML = ? `
+            <small>
+               
+              <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
+            </small>
+          ` : ''}
+ /* const container = document.querySelector('#screen-execucao .info-agricultor-container') 
                  || document.getElementById('screen-execucao');
   
   // Remove botão anterior caso exista
@@ -995,7 +1007,7 @@ function verificarEExibirBotaoMapa(agricultor) {
       container.appendChild(btnMapa);
     }
   }
-}
+}*/
 
 // Exemplo de integração ao selecionar um agricultor no screen-execucao:
 /* 
