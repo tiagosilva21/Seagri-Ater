@@ -138,6 +138,11 @@ button:disabled {
         <input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade" required>
         <label for="act-tipo">Tipo de Atividade</label>
       </div>
+      
+      <div class="form-floating d-none">
+        <input type="text" id="idgps" class="form-control mb-2" placeholder="Tipo de Atividade">
+        
+      </div>
       <div class="form-floating mb-3">
         <select class="form-select form-select-lg" id="act-responsavel" aria-label="Selecione um Responsável" required>
           <!--option value="">Carregando responsáveis...</option-->
@@ -565,7 +570,7 @@ button:disabled {
           return;
         }
         container.innerHTML = res.data.map(item => `
-          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.id}');">
+          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.geolocalizacao}');">
             <strong>${item.tipo} - ${item.agricultor}</strong>
             <small>${item.localidade} | ${item.data}</small>
             <p class="mb-0 text-truncate">${item.objetivo}</p>
@@ -628,6 +633,7 @@ button:disabled {
         tipo: document.getElementById("act-tipo").value,
         responsavel: document.getElementById("act-responsavel").value,
         localidade: document.getElementById("act-localidade").value,
+        geolocalizacao: document.getElementById("idgps").value,
         objetivo: document.getElementById("act-objetivo").value
       });
       alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
@@ -784,7 +790,7 @@ async function carregarAgricultores() {
 
   div.innerHTML = lista.map(ag => `
     <option value="${ag.nome}">${ag.nome}</option>
-    console.log(${ag.gps})
+    
   `).join('');
 }
     
@@ -914,7 +920,7 @@ function filtrarAgricultores() {
     return;
   }
 
-  div.innerHTML = lista.map(ag => `<option value="${ag.nome}">${ag.nome}</option>`).join('');
+  div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.id}')" value="${ag.nome}">${ag.nome}</option>`).join('');
 }
 
     // Função auxiliar para gerenciar estado de salvando
@@ -976,17 +982,22 @@ function verificarExibirBotaoMapa(gps) {
           ` : ''};
  
 }*/
-    function verificarExibirBotaoMapa(id) {
+    function inputGpsAtividade(id){
+      const idGps = document.getElementById('idgps');
+      idGps.value = String(id);
+    }
+    
+    function verificarExibirBotaoMapa(geolocalizacao) {
     const containerMaps = document.getElementById('maps');
-    console.log(id);
+   // console.log(id);
     if (!containerMaps) return;
     
-      const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
-      if (!ag) return;
-    if (ag.gps && ag.gps.trim() !== "") {
+   //   const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
+     // if (!ag) return;
+    if (geolocalizacao && geolocalizacao.trim() !== "") {
         containerMaps.innerHTML = `
             <small>
-                <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
+                <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
             </small>
         `;
     } else {
