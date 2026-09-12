@@ -963,7 +963,7 @@ formIDs.forEach(formId => {
     /**
  * Renderiza o botão 'Ver no Mapa' na tela de execução caso haja GPS
  * @param {Object} agricultor Dados do agricultor selecionado/cadastrado
- */
+ 
 function verificarExibirBotaoMapa(gps) {
   
   
@@ -974,6 +974,21 @@ function verificarExibirBotaoMapa(gps) {
             </small>
           ` : ''};
  
+}*/
+    function verificarExibirBotaoMapa(gps) {
+    const containerMaps = document.getElementById('maps');
+    
+    if (!containerMaps) return;
+
+    if (gps && gps.trim() !== "") {
+        containerMaps.innerHTML = `
+            <small>
+                <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
+            </small>
+        `;
+    } else {
+        containerMaps.innerHTML = ""; // Limpa caso não tenha GPS
+    }
 }
   
  /* const container = document.querySelector('#screen-execucao .info-agricultor-container') 
