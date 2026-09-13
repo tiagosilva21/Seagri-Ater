@@ -919,7 +919,7 @@ function filtrarAgricultores() {
     div.innerHTML = "";
     return;
   }
-
+console.log()
   div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.gps}')" value="${ag.nome}">${ag.nome}</option>`).join('');
 }
 
@@ -982,10 +982,11 @@ function verificarExibirBotaoMapa(gps) {
           ` : ''};
  
 }*/
-    function inputGpsAtividade(id){
+    function inputGpsAtividade(gps){
       const idGps = document.getElementById('idgps');
-      idGps.value = String(id);
-      console.log(id);
+      idGps..classList.remove('d-none');
+      idGps.value = String(gps);
+      console.log(gps);
     }
     
     function verificarExibirBotaoMapa(geolocalizacao) {
