@@ -984,7 +984,9 @@ function verificarExibirBotaoMapa(gps) {
 }*/
     function inputGpsAtividade(gps){
       const idGps = document.getElementById('idgps');
-      idGps..classList.remove('d-none');
+      if(gps){
+      idGps.classList.remove('d-none');
+      }
       idGps.value = String(gps);
       console.log(gps);
     }
