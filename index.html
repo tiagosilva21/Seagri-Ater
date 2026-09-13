@@ -526,7 +526,7 @@ button:disabled {
     function iniciarSessao() {
       document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
       
-      document.getElementById("act-solicitante").innerText = `${currentUser.nome}`;
+      document.getElementById("act-solicitante").value = `${currentUser.nome}`;
       
       let perfilUsuario = currentUser.perfil ? currentUser.perfil.trim().toLowerCase() : "";
       console.log("Perfil logado:", perfilUsuario);
