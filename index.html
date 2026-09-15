@@ -139,7 +139,7 @@ button:disabled {
         <label for="act-tipo">Tipo de Atividade</label>
       </div>
       
-      <div class="form-floating d-none">
+      <div class="form-floating">
         <input type="text" id="idgps" class="form-control mb-2" placeholder="Tipo de Atividade">
         
       </div>
@@ -921,7 +921,7 @@ function filtrarAgricultores() {
     div.innerHTML = "";
     return;
   }
-console.log()
+
   div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.gps}')" value="${ag.nome}">${ag.nome}</option>`).join('');
 }
 
