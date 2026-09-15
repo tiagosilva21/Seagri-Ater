@@ -922,7 +922,7 @@ function filtrarAgricultores() {
     return;
   }
 
-  div.innerHTML = lista.map(ag => `<option onclick="inputGpsAtividade('${ag.gps}')" value="${ag.nome}">${ag.nome}</option>`).join('');
+  div.innerHTML = lista.map(ag => `<option data-gps="${ag.gps}" value="${ag.nome}">${ag.nome}</option>`).join('');
 }
 
     // Função auxiliar para gerenciar estado de salvando
@@ -994,7 +994,28 @@ formIDs.forEach(formId => {
         containerMaps.innerHTML = ""; // Limpa caso não tenha GPS
     }
 }
-  
+  const actAgricultor = document.getElementById('act-agricultor');
+        const idgps = document.getElementById('idgps');
+        
+        const datalist = document.getElementById('datalist-agricultores');
+
+        // Escuta o evento de digitação/seleção no primeiro campo
+        actAgricultor.addEventListener('input', function() {
+            const valorSelecionado = this.value;
+            
+            // Procura a opção correspondente no datalist
+            const opcaoCorrespondente = Array.from(datalist.options).find(option => option.value === valorSelecionado);
+
+            if (opcaoCorrespondente) {
+                // Preenche os outros campos com os atributos "data-" da opção selecionada
+                idgps.value = opcaoCorrespondente.getAttribute('data-gps');
+                
+            } else {
+                // Limpa os campos se o texto não corresponder a nenhuma opção válida
+                idgps.value = '';
+               
+            }
+        });
   </script>
 </body>
 </html>
