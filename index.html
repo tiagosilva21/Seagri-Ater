@@ -158,7 +158,7 @@ button:disabled {
         <label for="act-objetivo">Objetivo</label>
       </div>
 
-      <button type="submit" class="btn btn-success w-100">Salvar</button>
+      <button type="submit" id="btn-criar-atividade"  onclick="bloquear(this)" class="btn btn-success w-100">Salvar</button>
     </form>
   </div>
 
@@ -189,7 +189,7 @@ button:disabled {
         
       </div>
        
-      <button type="submit" class="btn btn-success w-100">Registrar Execução</button>
+      <button type="submit" id="btn-execucao"  onclick="bloquear(this)" class="btn btn-success w-100">Registrar Execução</button>
     </form>
   </div>
 
@@ -238,7 +238,7 @@ button:disabled {
         <label for="trator-servico">Serviço a Realizar</label>
       </div>
     
-      <button type="submit" class="btn btn-success w-100">Salvar Agendamento</button>
+      <button type="submit" id="btn-screen-trator" onclick="bloquear(this)" class="btn btn-success w-100">Salvar Agendamento</button>
     </form>
   </div>
 
@@ -301,7 +301,7 @@ button:disabled {
         <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
         <label for="agri-obs">Observações</label>
       </div>
-      <button type="submit" class="btn btn-success w-100">Salvar Dados</button>
+      <button type="submit" id="btn-agricultor"  onclick="bloquear(this)" class="btn btn-success w-100">Salvar Dados</button>
     </form>
   </div>
 
@@ -310,7 +310,11 @@ button:disabled {
     let currentUser = JSON.parse(localStorage.getItem("user")) || null;
     let db;
     let listaTratorCache = [];
-
+  
+    function bloquear(botao) {
+      botao.disabled = true;
+     // botao.innerText = "Aguarde...";
+    }
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
       return new Promise((resolve, reject) => {
@@ -620,6 +624,9 @@ button:disabled {
       });
       alert(res.offlineQueued ? "Execução salva offline. Será enviada ao reconectar." : "Atividade concluída!");
       showScreen("screen-main");
+      document.getElementById('form-execucao').reset();
+      const botao = document.getElementById('btn-execucao');
+       botao.disabled = false;
       carregarAtividadesAtribuidas();
     };
 
@@ -638,6 +645,9 @@ button:disabled {
       });
       alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
       showScreen("screen-main");
+      document.getElementById('form-atividade').reset();
+      const botao = document.getElementById('btn-criar-atividade');
+       botao.disabled = false;
       carregarAtividadesAtribuidas();
     };
 
@@ -729,6 +739,10 @@ button:disabled {
       console.log(document.getElementById("trator-data").value);
       alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
       carregarAgendamentosTrator();
+      
+      document.getElementById('form-trator').reset();
+      const botao = document.getElementById('btn-screen-trator');
+       botao.disabled = false;
     };
 
    
@@ -885,32 +899,20 @@ function filtrarAgricultores() {
       });
       alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
       carregarAgricultores();
+      
+      document.getElementById('form-agricultor').reset();
+      const botao = document.getElementById('btn-agricultor');
+       botao.disabled = false;
     };
 
     //CARREGAR AGRICULTORES NO SCREEM NOVA ATIVIDADE
     async function carregarAgricultoresNovaAtividade() {
   showScreen("screen-nova-atividade");
   const div = document.getElementById("datalist-agricultores");
-  //div.innerHTML = "Carregando...";
-  
-  // Limpa o campo de busca ao recarregar a tela
-  //document.getElementById("busca-agricultor").value = "";
-
- /* const res = await apiRequest({ action: "getAgricultores" });
-  if (res.success) {
-    listaAgricultoresCache = res.data || [];
-    
-    if (navigator.onLine && !res.offlineQueued) {
-      for (let item of res.data) {
-        await dbOperation("agricultores", "readwrite", store => store.put(item));
-      }
-    }*/
+ 
     
     renderizarListaAgricultoresNovaAtividade(listaAgricultoresCache);
-  /*} else {
-    div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
-    datalistTrator.innerHTML += `<option value="${a.nome}">${a.nome} - ${a.localidade}</option>`;
-  }*/
+ 
 }
     function renderizarListaAgricultoresNovaAtividade(lista) {
   const div = document.getElementById("datalist-agricultores");
@@ -967,21 +969,7 @@ formIDs.forEach(formId => {
     }
   });
 });
-    /**
- * Renderiza o botão 'Ver no Mapa' na tela de execução caso haja GPS
- * @param {Object} agricultor Dados do agricultor selecionado/cadastrado
- 
-function verificarExibirBotaoMapa(gps) {
-  
-  
-     document.getElementById('maps').innerHTML = ${gps ? `
-            <small>
-               
-              <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${gps}" target="_blank">Ver Mapa</a>
-            </small>
-          ` : ''};
- 
-}*/
+
     function inputGpsAtividade(gps){
       const idGps = document.getElementById('idgps');
       //if(gps){
@@ -993,11 +981,9 @@ function verificarExibirBotaoMapa(gps) {
     
     function verificarExibirBotaoMapa(geolocalizacao) {
     const containerMaps = document.getElementById('maps');
-   // console.log(id);
+   
     if (!containerMaps) return;
-    
-   //   const ag = listaAgricultoresCache.find(a => String(a.id) === String(id));
-     // if (!ag) return;
+  
     if (geolocalizacao && geolocalizacao.trim() !== "") {
         containerMaps.innerHTML = `
             <small>
@@ -1009,51 +995,6 @@ function verificarExibirBotaoMapa(gps) {
     }
 }
   
- /* const container = document.querySelector('#screen-execucao .info-agricultor-container') 
-                 || document.getElementById('screen-execucao');
-  
-  // Remove botão anterior caso exista
-  const btnExistente = document.getElementById('btn-ver-mapa-execucao');
-  if (btnExistente) btnExistente.remove();
-
-  // Verifica se o agricultor está cadastrado e possui coordenadas VÁLIDAS
-  const temGps = agricultor && 
-                 agricultor.cadastrado && 
-                 ((agricultor.latitude && agricultor.longitude) || agricultor.gps);
-
-  if (temGps) {
-    const lat = agricultor.latitude || (agricultor.gps ? agricultor.gps.lat : null);
-    const lng = agricultor.longitude || (agricultor.gps ? agricultor.gps.lng : null);
-
-    if (lat && lng) {
-      const btnMapa = document.createElement('a');
-      btnMapa.id = 'btn-ver-mapa-execucao';
-      btnMapa.className = 'btn-ver-mapa';
-      btnMapa.target = '_blank';
-      btnMapa.rel = 'noopener noreferrer';
-      btnMapa.href = `https://www.google.com/maps?q=${lat},${lng}`;
-      btnMapa.innerHTML = `
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
-        </svg>
-        Ver no Mapa
-      `;
-
-      // Insere o botão próximo aos dados do agricultor na tela de execução
-      container.appendChild(btnMapa);
-    }
-  }
-}*/
-
-// Exemplo de integração ao selecionar um agricultor no screen-execucao:
-/* 
-  const agricultorAtual = {
-    cadastrado: true,
-    latitude: -12.9714,
-    longitude: -38.5014
-  };
-  verificarEExibirBotaoMapa(agricultorAtual);
-*/
   </script>
 </body>
 </html>
