@@ -165,7 +165,7 @@ button:disabled {
   <!-- EXECUÇÃO DE ATIVIDADE -->
   <div id="screen-execucao" class="screen">
     <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4>Concluir Atividade</h4>
+    <h4>Concluir Atividade</h4> <div id="maps"></div>
     <form id="form-execucao">
       <div class="form-floating">
         <input type="hidden" id="exec-id">
@@ -185,9 +185,7 @@ button:disabled {
         <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)">
         <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
       </div>
-       <div class="form-floating" id="maps">
-        
-      </div>
+      
        
       <button type="submit" id="btn-execucao"  onclick="bloquear(this)" class="btn btn-success w-100">Registrar Execução</button>
     </form>
