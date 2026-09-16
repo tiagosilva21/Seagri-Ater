@@ -406,11 +406,20 @@ button:disabled {
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const screen = document.getElementById(screenId);
+      console.log(screenId);
       if (screen) screen.classList.add('active');
 
       if (screenId == "screen-nova-atividade") {
         const actData = document.getElementById("act-data");
         if (actData) actData.value = new Date().toISOString().slice(0, 10);
+      }
+      if (screenId == "screen-execucao") {
+        const execData = document.getElementById("exec-data");
+        if (execData) execData.value = new Date().toISOString().slice(0, 10);
+      }
+      if (screenId == "screen-execucao") {
+        const execData = document.getElementById("exec-data");
+        if (execData) execData.value = new Date().toISOString().slice(0, 10);
       }
       if (screenId == "screen-execucao") {
         const execData = document.getElementById("exec-data");
@@ -780,9 +789,11 @@ button:disabled {
     }
 
     function telaAgricultores() {
+      console.log("Agricultores);
       showScreen("screen-agricultores");
       carregarAgricultores();
     }
+ 
     
     async function carregarAgricultores() {
       const div = document.getElementById("lista-agricultores");
