@@ -308,19 +308,19 @@ button:disabled {
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzCnUtzeoXtVmA8SfOdffNqSCDm_PGp74-O8RA7RS4F2-Ix7AnnHN3kF5m3SBG7wc_-gw/exec";
+   const API_URL = "https://script.google.com/macros/s/AKfycbzCnUtzeoXtVmA8SfOdffNqSCDm_PGp74-O8RA7RS4F2-Ix7AnnHN3kF5m3SBG7wc_-gw/exec";
     let currentUser = JSON.parse(localStorage.getItem("user")) || null;
     let db;
     let listaTratorCache = [];
   
     function bloquear(botao) {
       botao.disabled = true;
-     // botao.innerText = "Aguarde...";
     }
+
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open("AppAgricolaDB", 3); // Versão incrementada para suportar a tabela de trator
+        const req = indexedDB.open("AppAgricolaDB", 3);
         req.onupgradeneeded = (e) => {
           const dbInstance = e.target.result;
           if (!dbInstance.objectStoreNames.contains("syncQueue")) {
@@ -335,7 +335,6 @@ button:disabled {
           if (!dbInstance.objectStoreNames.contains("trator")) {
             dbInstance.createObjectStore("trator", { keyPath: "id" });
           }
-          
           if (!dbInstance.objectStoreNames.contains("usuarios")) {
             dbInstance.createObjectStore("usuarios", { keyPath: "id" });
           }
@@ -360,6 +359,7 @@ button:disabled {
 
     async function updateNetworkStatus() {
       const banner = document.getElementById("net-status");
+      if (!banner) return;
       if (navigator.onLine) {
         banner.className = "network-banner online";
         banner.innerText = "🟢 Conectado - Sincronizando...";
@@ -377,40 +377,44 @@ button:disabled {
     async function updateSyncBadge() {
       if (!db) return;
       const queue = await dbOperation("syncQueue", "readonly", store => store.getAll());
-      document.getElementById("sync-count").innerText = `Fila Offline: ${queue.length}`;
+      const badge = document.getElementById("sync-count");
+      if (badge) badge.innerText = `Fila Offline: ${queue.length}`;
     }
 
     // --- SERVICE WORKER PARA CACHE E PWA ---
     if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
-    .catch(err => console.log('Erro ao registrar SW:', err));
-}
-   
+      navigator.serviceWorker.register('./sw.js')
+        .catch(err => console.log('Erro ao registrar SW:', err));
+    }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     document.addEventListener("DOMContentLoaded", async () => {
       await initDB();
       
-      // Define valor inicial do filtro do mês para o mês atual (YYYY-MM)
-      const hoje = new Date();
-      const mesAtual = hoje.toISOString().slice(0, 7);
-      document.getElementById("filtro-mes-trator").value = mesAtual;
+      const filtroMes = document.getElementById("filtro-mes-trator");
+      if (filtroMes) {
+        const hoje = new Date();
+        filtroMes.value = hoje.toISOString().slice(0, 7);
+      }
 
       updateNetworkStatus();
       if (currentUser) {
         iniciarSessao();
-        
       }
     });
 
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-      if(screenId == "screen-nova-atividade"){
-        document.getElementById("act-data").value = new Date().toISOString().slice(0, 10);
+      const screen = document.getElementById(screenId);
+      if (screen) screen.classList.add('active');
+
+      if (screenId == "screen-nova-atividade") {
+        const actData = document.getElementById("act-data");
+        if (actData) actData.value = new Date().toISOString().slice(0, 10);
       }
-      if(screenId == "screen-execucao"){
-        document.getElementById("exec-data").value = new Date().toISOString().slice(0, 10);
+      if (screenId == "screen-execucao") {
+        const execData = document.getElementById("exec-data");
+        if (execData) execData.value = new Date().toISOString().slice(0, 10);
       }
     }
 
@@ -452,7 +456,6 @@ button:disabled {
         return { success: true, data: local };
       }
 
-      // Operações de escrita: adiciona na fila offline
       await dbOperation("syncQueue", "readwrite", store => store.add({ payload: payload, timestamp: Date.now() }));
       
       if (payload.action === "executarAtividade") {
@@ -500,57 +503,53 @@ button:disabled {
       await updateSyncBadge();
 
       if (currentUser) {
-        if (typeof carregarAtividadesAtribuidas === "function") {
-          await carregarAtividadesAtribuidas();
-        }
-        if (typeof carregarAgricultores === "function") {
-          await carregarAgricultores();
-        }
-        if (typeof carregarAgendamentosTrator === "function") {
-          await carregarAgendamentosTrator();
-        }
+        if (typeof carregarAtividadesAtribuidas === "function") await carregarAtividadesAtribuidas();
+        if (typeof carregarAgricultores === "function") await carregarAgricultores();
+        if (typeof carregarAgendamentosTrator === "function") await carregarAgendamentosTrator();
       }
     }
 
     // --- AUTENTICAÇÃO ---
-    document.getElementById("form-login").onsubmit = async (e) => {
-      e.preventDefault();
-      const res = await apiRequest({
-        action: "login",
-        email: document.getElementById("login-email").value,
-        senha: document.getElementById("login-senha").value
-      });
-      if (res.success) {
-        currentUser = res.user;
-        localStorage.setItem("user", JSON.stringify(currentUser));
-        iniciarSessao();
-      } else {
-        alert(res.message);
-      }
-    };
+    const formLogin = document.getElementById("form-login");
+    if (formLogin) {
+      formLogin.onsubmit = async (e) => {
+        e.preventDefault();
+        const res = await apiRequest({
+          action: "login",
+          email: document.getElementById("login-email").value,
+          senha: document.getElementById("login-senha").value
+        });
+        if (res.success) {
+          currentUser = res.user;
+          localStorage.setItem("user", JSON.stringify(currentUser));
+          iniciarSessao();
+        } else {
+          alert(res.message);
+        }
+      };
+    }
 
     function iniciarSessao() {
-      document.getElementById("user-welcome").innerText = `Olá, ${currentUser.nome}`;
+      const welcome = document.getElementById("user-welcome");
+      if (welcome) welcome.innerText = `Olá, ${currentUser.nome}`;
       
-      document.getElementById("act-solicitante").value = `${currentUser.nome}`;
+      const solicitante = document.getElementById("act-solicitante");
+      if (solicitante) solicitante.value = `${currentUser.nome}`;
       
       let perfilUsuario = currentUser.perfil ? currentUser.perfil.trim().toLowerCase() : "";
-      console.log("Perfil logado:", perfilUsuario);
-
       let btnTrator = document.getElementById("btn-trator");
       
       if (btnTrator) {
         if (perfilUsuario === "trator") {
-          btnTrator.classList.remove('d-none'); // Mostra se for Trator
+          btnTrator.classList.remove('d-none');
         } else {
-          btnTrator.classList.add('d-none');    // Garante que some para qualquer outro perfil
+          btnTrator.classList.add('d-none');
         }
       }
       showScreen("screen-main");
       carregarAtividadesAtribuidas();
       carregarAgricultores();
       carregarUsuarios();
-     // carregarAgricultoresNovaAtividade();
     }
 
     function logout() {
@@ -562,6 +561,7 @@ button:disabled {
     // --- ATIVIDADES ---
     async function carregarAtividadesAtribuidas() {
       const container = document.getElementById("lista-atividades");
+      if (!container) return;
       container.innerHTML = "Buscando...";
       const res = await apiRequest({ action: "getMinhasAtividades", usuario: currentUser.nome });
       if (res.success) {
@@ -614,58 +614,65 @@ button:disabled {
       }
     }
     
-    document.getElementById("form-execucao").onsubmit = async (e) => {
-      e.preventDefault();
-      
-      const botao = document.getElementById('btn-execucao');
-       botao.disabled = true;
-      const res = await apiRequest({
-        action: "executarAtividade",
-        id: document.getElementById("exec-id").value,
-        dataExecucao: document.getElementById("exec-data").value,
-        tecnicos: document.getElementById("exec-tecnicos").value,
-        atividadeRealizada: document.getElementById("exec-atividade").value,
-        geolocalizacao: document.getElementById("exec-geo").value
-      });
-      alert(res.offlineQueued ? "Execução salva offline. Será enviada ao reconectar." : "Atividade concluída!");
-      showScreen("screen-main");
-      document.getElementById('form-execucao').reset();
-      carregarAtividadesAtribuidas();
-      
-       botao.disabled = false;
-    };
+    const formExecucao = document.getElementById("form-execucao");
+    if (formExecucao) {
+      formExecucao.onsubmit = async (e) => {
+        e.preventDefault();
+        const botao = document.getElementById('btn-execucao');
+        if (botao) botao.disabled = true;
 
-    document.getElementById("form-atividade").onsubmit = async (e) => {
-      e.preventDefault();
-      const botao = document.getElementById('btn-criar-atividade');
-      botao.disabled = true;
-      const res = await apiRequest({
-        action: "criarAtividade",
-        data: document.getElementById("act-data").value,
-        solicitante: document.getElementById("act-solicitante").value,
-        agricultor: document.getElementById("act-agricultor").value,
-        tipo: document.getElementById("act-tipo").value,
-        responsavel: document.getElementById("act-responsavel").value,
-        localidade: document.getElementById("act-localidade").value,
-        geolocalizacao: document.getElementById("idgps").value,
-        objetivo: document.getElementById("act-objetivo").value
-      });
-      alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
-      showScreen("screen-main");
-      
-      carregarAtividadesAtribuidas();
-      document.getElementById('form-atividade').reset();
-      
-       botao.disabled = false;
-    };
+        const res = await apiRequest({
+          action: "executarAtividade",
+          id: document.getElementById("exec-id").value,
+          dataExecucao: document.getElementById("exec-data").value,
+          tecnicos: document.getElementById("exec-tecnicos").value,
+          atividadeRealizada: document.getElementById("exec-atividade").value,
+          geolocalizacao: document.getElementById("exec-geo").value
+        });
+        alert(res.offlineQueued ? "Execução salva offline. Será enviada ao reconectar." : "Atividade concluída!");
+        showScreen("screen-main");
+        formExecucao.reset();
+        carregarAtividadesAtribuidas();
+        
+        if (botao) botao.disabled = false;
+      };
+    }
+
+    const formAtividade = document.getElementById("form-atividade");
+    if (formAtividade) {
+      formAtividade.onsubmit = async (e) => {
+        e.preventDefault();
+        const botao = document.getElementById('btn-criar-atividade');
+        if (botao) botao.disabled = true;
+
+        const res = await apiRequest({
+          action: "criarAtividade",
+          data: document.getElementById("act-data").value,
+          solicitante: document.getElementById("act-solicitante").value,
+          agricultor: document.getElementById("act-agricultor").value,
+          tipo: document.getElementById("act-tipo").value,
+          responsavel: document.getElementById("act-responsavel").value,
+          localidade: document.getElementById("act-localidade").value,
+          geolocalizacao: document.getElementById("idgps").value,
+          objetivo: document.getElementById("act-objetivo").value
+        });
+        alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
+        showScreen("screen-main");
+        carregarAtividadesAtribuidas();
+        formAtividade.reset();
+        
+        if (botao) botao.disabled = false;
+      };
+    }
 
     // --- TRATOR (LISTAGEM E EDIÇÃO) ---
     async function carregarAgendamentosTrator() {
       showScreen("screen-lista-trator");
       const div = document.getElementById("lista-agendamentos-trator");
+      if (!div) return;
       div.innerHTML = "Carregando...";
 
-      const mesFiltro = document.getElementById("filtro-mes-trator").value; // Formato YYYY-MM
+      const filtroMes = document.getElementById("filtro-mes-trator").value;
       const res = await apiRequest({ action: "getAgendamentosTrator" });
 
       if (res.success) {
@@ -677,19 +684,17 @@ button:disabled {
           }
         }
 
-        // Filtra pelo mês selecionado na interface
         const agendamentosFiltrados = listaTratorCache.filter(item => {
           if (!item.data) return false;
-          return item.data.substring(0, 7) === mesFiltro;
+          return item.data.substring(0, 7) === filtroMes;
         });
 
         if (agendamentosFiltrados.length === 0) {
           div.innerHTML = "<p class='text-muted'>Nenhum agendamento encontrado para este mês.</p>";
           return;
         }
-        console.log(agendamentosFiltrados.length);
+
         div.innerHTML = agendamentosFiltrados.map(item => {
-         
           const dataFormatada = item.data ? item.data.split('-').reverse().join('/') : '';
           return `
           <div class="card card-item p-3 mb-2">
@@ -704,14 +709,15 @@ button:disabled {
             </div>
           </div>
         `;
-      }).join('');
+        }).join('');
       } else {
         div.innerHTML = "<p class='text-danger'>Erro ao carregar agendamentos.</p>";
       }
     }
 
     function novoAgendamentoTrator() {
-      document.getElementById("form-trator").reset();
+      const formTrator = document.getElementById("form-trator");
+      if (formTrator) formTrator.reset();
       document.getElementById("trator-id").value = "";
       document.getElementById("trator-data").value = new Date().toISOString().slice(0, 10);
       document.getElementById("trator-form-title").innerText = "Agendar Trator";
@@ -733,140 +739,132 @@ button:disabled {
       showScreen("screen-trator");
     }
 
-    document.getElementById("form-trator").onsubmit = async (e) => {
-      e.preventDefault();
-      const botao = document.getElementById('btn-screen-trator');
-       botao.disabled = true;
-      const res = await apiRequest({
-        action: "agendarTrator",
-        id: document.getElementById("trator-id").value,
-        agricultor: document.getElementById("trator-agricultor").value,
-        data: document.getElementById("trator-data").value,
-        local: document.getElementById("trator-local").value,
-        horas: document.getElementById("trator-horas").value,
-        servico: document.getElementById("trator-servico").value
-      });
-      console.log(document.getElementById("trator-data").value);
-      alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
-      carregarAgendamentosTrator();
-      
-      document.getElementById('form-trator').reset();
-       botao.disabled = false;
-    };
+    const formTrator = document.getElementById("form-trator");
+    if (formTrator) {
+      formTrator.onsubmit = async (e) => {
+        e.preventDefault();
+        const botao = document.getElementById('btn-screen-trator');
+        if (botao) botao.disabled = true;
 
-   
-let listaAgricultoresCache = [];
-let listaUsuariosCache = [];
-    async function carregarUsuarios() {
- 
-  const res = await apiRequest({ action: "getUsuarios" });
-  if (res.success) {
-    listaUsuariosCache = res.data || [];
-    console.log(res.data);
-    if (navigator.onLine && !res.offlineQueued) {
-      for (let item of res.data) {
-        await dbOperation("usuarios", "readwrite", store => store.put(item));
-      }
+        const res = await apiRequest({
+          action: "agendarTrator",
+          id: document.getElementById("trator-id").value,
+          agricultor: document.getElementById("trator-agricultor").value,
+          data: document.getElementById("trator-data").value,
+          local: document.getElementById("trator-local").value,
+          horas: document.getElementById("trator-horas").value,
+          servico: document.getElementById("trator-servico").value
+        });
+        alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
+        carregarAgendamentosTrator();
+        formTrator.reset();
+        
+        if (botao) botao.disabled = false;
+      };
     }
-    
-    renderizarListaUsuarios(listaUsuariosCache);
-  } 
-}
 
-    function telaAgricultores(){
-       showScreen("screen-agricultores");
+    let listaAgricultoresCache = [];
+    let listaUsuariosCache = [];
+
+    async function carregarUsuarios() {
+      const res = await apiRequest({ action: "getUsuarios" });
+      if (res.success) {
+        listaUsuariosCache = res.data || [];
+        if (navigator.onLine && !res.offlineQueued) {
+          for (let item of res.data) {
+            await dbOperation("usuarios", "readwrite", store => store.put(item));
+          }
+        }
+        renderizarListaUsuarios(listaUsuariosCache);
+      } 
+    }
+
+    function telaAgricultores() {
+      showScreen("screen-agricultores");
       carregarAgricultores();
     }
     
-async function carregarAgricultores() {
- 
-  const div = document.getElementById("lista-agricultores");
-  div.innerHTML = "Carregando...";
-  
-  // Limpa o campo de busca ao recarregar a tela
-  document.getElementById("busca-agricultor").value = "";
+    async function carregarAgricultores() {
+      const div = document.getElementById("lista-agricultores");
+      if (!div) return;
+      div.innerHTML = "Carregando...";
+      
+      const busca = document.getElementById("busca-agricultor");
+      if (busca) busca.value = "";
 
-  const res = await apiRequest({ action: "getAgricultores" });
-  if (res.success) {
-    listaAgricultoresCache = res.data || [];
-    
-    if (navigator.onLine && !res.offlineQueued) {
-      for (let item of res.data) {
-        await dbOperation("agricultores", "readwrite", store => store.put(item));
+      const res = await apiRequest({ action: "getAgricultores" });
+      if (res.success) {
+        listaAgricultoresCache = res.data || [];
+        
+        if (navigator.onLine && !res.offlineQueued) {
+          for (let item of res.data) {
+            await dbOperation("agricultores", "readwrite", store => store.put(item));
+          }
+        }
+        renderizarListaAgricultores(listaAgricultoresCache);
+      } else {
+        div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
       }
     }
-    
-    renderizarListaAgricultores(listaAgricultoresCache);
-  } else {
-    div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
-  }
-}
 
-// Renderiza o HTML com base no array recebido
     function renderizarListaUsuarios(lista) {
-  const div = document.getElementById("act-responsavel");
-  
-  if (lista.length === 0) {
-   // div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
-    return;
-  }
+      const div = document.getElementById("act-responsavel");
+      if (!div || lista.length === 0) return;
 
-  div.innerHTML = lista.map(ag => `
-    <option value="${ag.nome}">${ag.nome}</option>
+      div.innerHTML = lista.map(ag => `
+        <option value="${ag.nome}">${ag.nome}</option>
+      `).join('');
+    }
     
-  `).join('');
-}
-    
-function renderizarListaAgricultores(lista) {
-  const div = document.getElementById("lista-agricultores");
-  
-  if (lista.length === 0) {
-    div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
-    return;
-  }
+    function renderizarListaAgricultores(lista) {
+      const div = document.getElementById("lista-agricultores");
+      if (!div) return;
+      
+      if (lista.length === 0) {
+        div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
+        return;
+      }
 
-  div.innerHTML = lista.map(ag => `
-    <div class="card p-2 mb-2">
-      <div class="d-flex justify-content-between align-items-center">
-        <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
-        <div class="d-flex align-items-center gap-2">
-          ${ag.gps ? `
-            <small>
-               
-              <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
-            </small>
-          ` : ''}
-          <button class="btn btn-sm btn-outline-primary text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
+      div.innerHTML = lista.map(ag => `
+        <div class="card p-2 mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
+            <div class="d-flex align-items-center gap-2">
+              ${ag.gps ? `
+                <small>
+                  <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+                </small>
+              ` : ''}
+              <button class="btn btn-sm btn-outline-primary text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
+            </div>
+          </div>
+          <small class="text-secondary">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
         </div>
-      </div>
-      <small class="text-secondary">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
-    </div>
-  `).join('');
-}
+      `).join('');
+    }
 
-// Filtra a lista em memória sem precisar refazer requisição API
-function filtrarAgricultores() {
-  const termo = document.getElementById("busca-agricultor").value.toLowerCase().trim();
+    function filtrarAgricultores() {
+      const inputBusca = document.getElementById("busca-agricultor");
+      if (!inputBusca) return;
+      const termo = inputBusca.value.toLowerCase().trim();
 
-  if (!termo) {
-    renderizarListaAgricultores(listaAgricultoresCache);
-    return;
-  }
+      if (!termo) {
+        renderizarListaAgricultores(listaAgricultoresCache);
+        return;
+      }
 
-  const filtrados = listaAgricultoresCache.filter(ag => {
-    const nome = (ag.nome || '').toLowerCase();
-    const apelido = (ag.apelido || '').toLowerCase();
-    //const caf = (ag.caf || '').toLowerCase();
-  //  const contato = (ag.contato || '').toLowerCase();
+      const filtrados = listaAgricultoresCache.filter(ag => {
+        const nome = (ag.nome || '').toLowerCase();
+        const apelido = (ag.apelido || '').toLowerCase();
+        return nome.includes(termo) || apelido.includes(termo);
+      });
 
-    return nome.includes(termo) || 
-           apelido.includes(termo);
-  });
+      renderizarListaAgricultores(filtrados);
+    }
 
-  renderizarListaAgricultores(filtrados);
-}
     function novoAgricultor() {
-      document.getElementById("form-agricultor").reset();
+      const formAgri = document.getElementById("form-agricultor");
+      if (formAgri) formAgri.reset();
       document.getElementById("agri-id").value = "";
       document.getElementById("agri-form-title").innerText = "Cadastrar Agricultor";
       showScreen("screen-form-agricultor");
@@ -884,148 +882,87 @@ function filtrarAgricultores() {
       document.getElementById("agri-contacto").value = ag.contato;
       document.getElementById("agri-cultivo").value = ag.cultivo;
       document.getElementById("agri-terra").value = ag.terra;
-      document.getElementById("agri-geo").value = ag.gps,
+      document.getElementById("agri-geo").value = ag.gps;
       document.getElementById("agri-obs").value = ag.obs;
       document.getElementById("agri-form-title").innerText = "Alterar Agricultor";
       showScreen("screen-form-agricultor");
     }
 
-    document.getElementById("form-agricultor").onsubmit = async (e) => {
-      e.preventDefault();
-      const botao = document.getElementById('btn-agricultor');
-       botao.disabled = true;
-      const res = await apiRequest({
-        action: "salvarAgricultor",
-        id: document.getElementById("agri-id").value,
-        nome: document.getElementById("agri-nome").value,
-        apelido: document.getElementById("agri-apelido").value,
-        caf: document.getElementById("agri-caf").value,
-        cafData: document.getElementById("agri-datacaf").value,
-        localidade: document.getElementById("agri-localidade").value,
-        contato: document.getElementById("agri-contacto").value,
-        cultivo: document.getElementById("agri-cultivo").value,
-        terra: document.getElementById("agri-terra").value,
-        gps: document.getElementById("agri-geo").value,
-        obs: document.getElementById("agri-obs").value
-      });
-      alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
-      carregarAgricultores();
-      
-      document.getElementById('form-agricultor').reset();
-       botao.disabled = false;
-    };
+    const formAgricultor = document.getElementById("form-agricultor");
+    if (formAgricultor) {
+      formAgricultor.onsubmit = async (e) => {
+        e.preventDefault();
+        const botao = document.getElementById('btn-agricultor');
+        if (botao) botao.disabled = true;
 
-    //CARREGAR AGRICULTORES NO SCREEM NOVA ATIVIDADE
+        const res = await apiRequest({
+          action: "salvarAgricultor",
+          id: document.getElementById("agri-id").value,
+          nome: document.getElementById("agri-nome").value,
+          apelido: document.getElementById("agri-apelido").value,
+          caf: document.getElementById("agri-caf").value,
+          cafData: document.getElementById("agri-datacaf").value,
+          localidade: document.getElementById("agri-localidade").value,
+          contato: document.getElementById("agri-contacto").value,
+          cultivo: document.getElementById("agri-cultivo").value,
+          terra: document.getElementById("agri-terra").value,
+          gps: document.getElementById("agri-geo").value,
+          obs: document.getElementById("agri-obs").value
+        });
+        alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
+        carregarAgricultores();
+        formAgricultor.reset();
+        
+        if (botao) botao.disabled = false;
+      };
+    }
+
     async function carregarAgricultoresNovaAtividade() {
-  showScreen("screen-nova-atividade");
-  const div = document.getElementById("datalist-agricultores");
- 
-    
-    renderizarListaAgricultoresNovaAtividade(listaAgricultoresCache);
- 
-}
+      showScreen("screen-nova-atividade");
+      renderizarListaAgricultoresNovaAtividade(listaAgricultoresCache);
+    }
+
     function renderizarListaAgricultoresNovaAtividade(lista) {
-  const div = document.getElementById("datalist-agricultores");
-  
-  if (lista.length === 0) {
-    div.innerHTML = "";
-    return;
-  }
+      const div = document.getElementById("datalist-agricultores");
+      if (!div) return;
+      if (lista.length === 0) {
+        div.innerHTML = "";
+        return;
+      }
+      div.innerHTML = lista.map(ag => `<option data-gps="${ag.gps}" value="${ag.nome}">${ag.nome}</option>`).join('');
+    }
 
-  div.innerHTML = lista.map(ag => `<option data-gps="${ag.gps}" value="${ag.nome}">${ag.nome}</option>`).join('');
-}
-
-    // Função auxiliar para gerenciar estado de salvando
-function setButtonLoading(button, isLoading, originalText = 'Salvar') {
-  if (isLoading) {
-    button.disabled = true;
-    button.dataset.originalText = button.innerHTML;
-    button.innerHTML = `<span class="btn-spinner"></span> Salvando...`;
-  } else {
-    button.disabled = false;
-    button.innerHTML = button.dataset.originalText || originalText;
-  }
-}
-
-// Configuração dos formulários das 4 telas solicitadas
-const formIDs = [
-  'form-nova-atividade', // screen-nova-atividade
-  'form-execucao',       // screen-execucao
-  'form-trator',         // screen-trator
-  'form-agricultor'      // screen-form-agricultor
-];
-
-/*formIDs.forEach(formId => {
-  const form = document.getElementById(formId);
-  if (!form) return;
-
-  form.addEventListener('submit', async function (event) {
-    // Previne comportamento padrão caso não seja manipulado por AJAX/IndexedDB
-    const submitBtn = form.querySelector('button[type="submit"]') || form.querySelector('.btn-submit');
+    function verificarExibirBotaoMapa(geolocalizacao) {
+      const containerMaps = document.getElementById('maps');
+      if (!containerMaps) return;
     
-    if (submitBtn) {
-      setButtonLoading(submitBtn, true);
-      
-      // Caso seu envio seja assíncrono (ex: salvar no IndexedDB ou API)
-      try {
-        // Exemplo: await salvarDados();
-        // setTimeout simula a conclusão do salvamento
-        setTimeout(() => {
-          setButtonLoading(submitBtn, false);
-        }, 1500);
-      } catch (error) {
-        setButtonLoading(submitBtn, false);
+      if (geolocalizacao && geolocalizacao.trim() !== "") {
+        containerMaps.innerHTML = `
+          <small>
+            <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
+          </small>
+        `;
+      } else {
+        containerMaps.innerHTML = "";
       }
     }
-  });
-});*/
 
-    function inputGpsAtividade(gps){
-      const idGpsa = document.getElementById('idgps');
-      //if(gps){
-     // idGps.classList.remove('d-none');
-     // }
-      idGpsa.value = gps;
-      console.log(gps);
+    const actAgricultor = document.getElementById('act-agricultor');
+    const idgps = document.getElementById('idgps');
+    const datalist = document.getElementById('datalist-agricultores');
+
+    if (actAgricultor && datalist && idgps) {
+      actAgricultor.addEventListener('input', function() {
+        const valorSelecionado = this.value;
+        const opcaoCorrespondente = Array.from(datalist.options).find(option => option.value === valorSelecionado);
+
+        if (opcaoCorrespondente) {
+          idgps.value = opcaoCorrespondente.getAttribute('data-gps');
+        } else {
+          idgps.value = '';
+        }
+      });
     }
-    
-    function verificarExibirBotaoMapa(geolocalizacao) {
-    const containerMaps = document.getElementById('maps');
-   
-    if (!containerMaps) return;
-  
-    if (geolocalizacao && geolocalizacao.trim() !== "") {
-        containerMaps.innerHTML = `
-            <small>
-                <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
-            </small>
-        `;
-    } else {
-        containerMaps.innerHTML = ""; // Limpa caso não tenha GPS
-    }
-}
-  const actAgricultor = document.getElementById('act-agricultor');
-        const idgps = document.getElementById('idgps');
-        
-        const datalist = document.getElementById('datalist-agricultores');
-
-        // Escuta o evento de digitação/seleção no primeiro campo
-        actAgricultor.addEventListener('input', function() {
-            const valorSelecionado = this.value;
-            
-            // Procura a opção correspondente no datalist
-            const opcaoCorrespondente = Array.from(datalist.options).find(option => option.value === valorSelecionado);
-
-            if (opcaoCorrespondente) {
-                // Preenche os outros campos com os atributos "data-" da opção selecionada
-                idgps.value = opcaoCorrespondente.getAttribute('data-gps');
-                
-            } else {
-                // Limpa os campos se o texto não corresponder a nenhuma opção válida
-                idgps.value = '';
-               
-            }
-        });
   </script>
 </body>
 </html>
