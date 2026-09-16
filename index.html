@@ -553,9 +553,10 @@ function hideLoader() {
     // --- AUTENTICAÇÃO ---
     const formLogin = document.getElementById("form-login");
     if (formLogin) {
-      showLoader("Carregando...");
+      
       formLogin.onsubmit = async (e) => {
         e.preventDefault();
+        showLoader("Carregando...");
         const res = await apiRequest({
           action: "login",
           email: document.getElementById("login-email").value,
