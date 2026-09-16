@@ -81,7 +81,13 @@ button:disabled {
 
   <!-- INDICADOR DE STATUS DA CONEXÃO -->
   <div id="net-status" class="network-banner online">🟢 Conectado - Sincronizado</div>
-
+  <!-- LOADER GLOBAL DA TELA -->
+<div id="global-loader" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-white bg-opacity-75" style="z-index: 9999;">
+  <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+    <span class="visually-hidden">Carregando...</span>
+  </div>
+  <p id="loader-text" class="mt-2 fw-bold text-secondary">Carregando dados...</p>
+</div>
   <!-- TELA DE LOGIN -->
   <div id="screen-login" class="screen active text-center mt-3">
     <h3>Acesso ao Sistema</h3>
@@ -329,7 +335,20 @@ button:disabled {
     function bloquear(botao) {
       botao.disabled = true;
     }
+  // --- CONTROLE DE LOADER GLOBAL ---
 
+function showLoader(mensagem = "Carregando dados...") {
+  const loader = document.getElementById("global-loader");
+  const texto = document.getElementById("loader-text");
+  
+  if (texto) texto.innerText = mensagem;
+  if (loader) loader.classList.remove("d-none");
+}
+
+function hideLoader() {
+  const loader = document.getElementById("global-loader");
+  if (loader) loader.classList.add("d-none");
+}
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
       return new Promise((resolve, reject) => {
@@ -534,6 +553,7 @@ button:disabled {
     // --- AUTENTICAÇÃO ---
     const formLogin = document.getElementById("form-login");
     if (formLogin) {
+      showLoader("Carregando...");
       formLogin.onsubmit = async (e) => {
         e.preventDefault();
         const res = await apiRequest({
@@ -545,6 +565,7 @@ button:disabled {
           currentUser = res.user;
           localStorage.setItem("user", JSON.stringify(currentUser));
           iniciarSessao();
+          hideLoader();
         } else {
           alert(res.message);
         }
@@ -640,6 +661,7 @@ button:disabled {
     if (formExecucao) {
       formExecucao.onsubmit = async (e) => {
         e.preventDefault();
+        showLoader("Salvando...");
         const botao = document.getElementById('btn-execucao');
         if (botao) botao.disabled = true;
 
@@ -653,6 +675,7 @@ button:disabled {
         });
         alert(res.offlineQueued ? "Execução salva offline. Será enviada ao reconectar." : "Atividade concluída!");
         showScreen("screen-main");
+        hideLoader();
         formExecucao.reset();
         carregarAtividadesAtribuidas();
         
@@ -664,6 +687,7 @@ button:disabled {
     if (formAtividade) {
       formAtividade.onsubmit = async (e) => {
         e.preventDefault();
+        showLoader("Salvando...");
         const botao = document.getElementById('btn-criar-atividade');
         if (botao) botao.disabled = true;
 
@@ -681,6 +705,7 @@ button:disabled {
         alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
         showScreen("screen-main");
         carregarAtividadesAtribuidas();
+        hideLoader();
         formAtividade.reset();
         
         if (botao) botao.disabled = false;
@@ -765,6 +790,7 @@ button:disabled {
     if (formTrator) {
       formTrator.onsubmit = async (e) => {
         e.preventDefault();
+        showLoader("Agendando...");
         const botao = document.getElementById('btn-screen-trator');
         if (botao) botao.disabled = true;
 
@@ -779,6 +805,7 @@ button:disabled {
         });
         alert(res.offlineQueued ? "Agendamento salvo offline!" : "Agendamento Salvo!");
         carregarAgendamentosTrator();
+        hideLoader();
         formTrator.reset();
         
         if (botao) botao.disabled = false;
@@ -916,6 +943,7 @@ button:disabled {
     if (formAgricultor) {
       formAgricultor.onsubmit = async (e) => {
         e.preventDefault();
+        showLoader("Salvando...");
         const botao = document.getElementById('btn-agricultor');
         if (botao) botao.disabled = true;
 
@@ -935,6 +963,7 @@ button:disabled {
         });
         alert(res.offlineQueued ? "Dados de agricultor salvos offline!" : "Agricultor salvo!");
         carregarAgricultores();
+        hideLoader();
         formAgricultor.reset();
         
         if (botao) botao.disabled = false;
