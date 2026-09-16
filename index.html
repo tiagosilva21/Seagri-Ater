@@ -191,7 +191,7 @@ button:disabled {
       </div>
       
        
-      <button type="submit" id="btn-execucao"  onclick="bloquear(this)" class="btn btn-success w-100">Registrar Execução</button>
+      <button type="submit" id="btn-execucao"  class="btn btn-success w-100">Registrar Execução</button>
     </form>
   </div>
 
@@ -240,7 +240,7 @@ button:disabled {
         <label for="trator-servico">Serviço a Realizar</label>
       </div>
     
-      <button type="submit" id="btn-screen-trator" onclick="bloquear(this)" class="btn btn-success w-100">Salvar Agendamento</button>
+      <button type="submit" id="btn-screen-trator" class="btn btn-success w-100">Salvar Agendamento</button>
     </form>
   </div>
 
@@ -303,7 +303,7 @@ button:disabled {
         <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
         <label for="agri-obs">Observações</label>
       </div>
-      <button type="submit" id="btn-agricultor"  onclick="bloquear(this)" class="btn btn-success w-100">Salvar Dados</button>
+      <button type="submit" id="btn-agricultor" class="btn btn-success w-100">Salvar Dados</button>
     </form>
   </div>
 
@@ -981,11 +981,11 @@ formIDs.forEach(formId => {
 });
 
     function inputGpsAtividade(gps){
-      const idGps = document.getElementById('idgps');
+      const idGpsa = document.getElementById('idgps');
       //if(gps){
      // idGps.classList.remove('d-none');
      // }
-      idGps.value = gps;
+      idGpsa.value = gps;
       console.log(gps);
     }
     
