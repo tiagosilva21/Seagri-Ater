@@ -988,9 +988,11 @@ function hideLoader() {
 
     function verificarExibirBotaoMapa(geolocalizacao) {
       const containerMaps = document.getElementById('maps');
+      const execgeo = document.getElementById('exec-geo');
       if (!containerMaps) return;
     
       if (geolocalizacao && geolocalizacao.trim() !== "") {
+        execgeo.value = geolocalizacao;
         containerMaps.innerHTML = `
           <small>
             <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
