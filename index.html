@@ -581,7 +581,7 @@ function hideLoader() {
       if (welcome) welcome.innerText = `Olá, ${currentUser.nome}`;
       
       const solicitante = document.getElementById("act-solicitante");
-      if (solicitante) solicitante.value = `${currentUser.nome}`;
+      if (solicitante) solicitante.value = currentUser.nome;
       
       let perfilUsuario = currentUser.perfil ? currentUser.perfil.trim().toLowerCase() : "";
       let btnTrator = document.getElementById("btn-trator");
@@ -749,7 +749,7 @@ function hideLoader() {
           agricultor: document.getElementById("act-agricultor").value,
           tipo: document.getElementById("act-tipo").value,
           responsavel: responsavelSelecionado,
-          localidade: document.getElementById("act-localidade").value,
+          localidade: currentUser.nome,//document.getElementById("act-localidade").value,
           geolocalizacao: document.getElementById("idgps").value,
           objetivo: document.getElementById("act-objetivo").value,
           // Parâmetros extras para o caso de execução simultânea
