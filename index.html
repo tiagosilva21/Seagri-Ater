@@ -175,7 +175,15 @@ button:disabled {
         <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
         <label for="act-objetivo">Objetivo</label>
       </div>
+      <!-- Adicione esta opção logo antes do botão de Salvar -->
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="act-executar-agora" onchange="verificarResponsavelExecucao()">
+        <label class="form-check-label" for="act-executar-agora">
+          Já estou executando esta atividade agora (Responsável sou eu)
+        </label>
+      </div>
 
+      <!--button type="submit" id="btn-criar-atividade" class="btn btn-success w-100">Salvar Atividade</button-->
       <button type="submit" id="btn-criar-atividade" class="btn btn-success w-100">Salvar</button>
     </form>
   </div>
@@ -678,7 +686,7 @@ function hideLoader() {
         if (botao) botao.disabled = false;
       };
     }
-
+/*
     const formAtividade = document.getElementById("form-atividade");
     if (formAtividade) {
       formAtividade.onsubmit = async (e) => {
@@ -703,6 +711,66 @@ function hideLoader() {
         carregarAtividadesAtribuidas();
         hideLoader();
         formAtividade.reset();
+        
+        if (botao) botao.disabled = false;
+      };
+    }*/
+
+    const formAtividade = document.getElementById("form-atividade");
+    if (formAtividade) {
+      formAtividade.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const executarAgora = document.getElementById("act-executar-agora").checked;
+        const responsavelSelecionado = document.getElementById("act-responsavel").value;
+
+        // Validação de segurança se marcou para executar mas o responsável não é ele
+        if (executarAgora && currentUser && responsavelSelecionado !== currentUser.nome) {
+          alert("Você só pode executar simultaneamente uma atividade se você for o responsável principal!");
+          return;
+        }
+
+        showLoader("Salvando...");
+        const botao = document.getElementById('btn-criar-atividade');
+        if (botao) botao.disabled = true;
+
+        // Pega a geolocalização atual automaticamente se for executar agora e houver suporte
+        let geoExecucao = "";
+        if (executarAgora) {
+          try {
+            geoExecucao = document.getElementById("idgps").value || "";
+          } catch(err) {}
+        }
+
+        const payload = {
+          action: "criarAtividade",
+          data: document.getElementById("act-data").value,
+          solicitante: document.getElementById("act-solicitante").value,
+          agricultor: document.getElementById("act-agricultor").value,
+          tipo: document.getElementById("act-tipo").value,
+          responsavel: responsavelSelecionado,
+          localidade: document.getElementById("act-localidade").value,
+          geolocalizacao: document.getElementById("idgps").value,
+          objetivo: document.getElementById("act-objetivo").value,
+          // Parâmetros extras para o caso de execução simultânea
+          executarDireto: executarAgora,
+          statusInicial: executarAgora ? "Concluída" : "Agendado",
+          dataExecucao: executarAgora ? document.getElementById("act-data").value : "",
+          atividadeRealizada: executarAgora ? (document.getElementById("act-objetivo").value + " (Executado no ato da criação)") : ""
+        };
+
+        const res = await apiRequest(payload);
+        
+        alert(res.offlineQueued ? "Atividade salva offline!" : (executarAgora ? "Atividade criada e registrada como concluída!" : "Atividade Criada!"));
+        
+        showScreen("screen-main");
+        carregarAtividadesAtribuidas();
+        hideLoader();
+        formAtividade.reset();
+        
+        // Desmarca o checkbox de execução se estiver marcado
+        const checkbox = document.getElementById("act-executar-agora");
+        if (checkbox) checkbox.checked = false;
         
         if (botao) botao.disabled = false;
       };
@@ -1037,6 +1105,17 @@ function hideLoader() {
         }
       });
     }
+    function verificarResponsavelExecucao() {
+  const checkbox = document.getElementById("act-executar-agora");
+  const responsavelSelect = document.getElementById("act-responsavel");
+  
+  if (checkbox && checkbox.checked) {
+    if (currentUser && responsavelSelect.value !== currentUser.nome) {
+      alert("Para executar a atividade agora, o responsável principal deve ser você (" + currentUser.nome + ").");
+      responsavelSelect.value = currentUser.nome; // Força selecionar o usuário logado ou avisa
+    }
+  }
+}
   </script>
 </body>
 </html>
