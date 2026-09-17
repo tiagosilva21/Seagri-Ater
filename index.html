@@ -449,14 +449,6 @@ function hideLoader() {
         const execData = document.getElementById("exec-data");
         if (execData) execData.value = new Date().toISOString().slice(0, 10);
       }
-      if (screenId == "screen-execucao") {
-        const execData = document.getElementById("exec-data");
-        if (execData) execData.value = new Date().toISOString().slice(0, 10);
-      }
-      if (screenId == "screen-execucao") {
-        const execData = document.getElementById("exec-data");
-        if (execData) execData.value = new Date().toISOString().slice(0, 10);
-      }
     }
 
     // --- CAMADA DE COMUNICAÇÃO E MODO OFFLINE ---
@@ -514,6 +506,10 @@ function hideLoader() {
         const tempObj = { ...payload, id: payload.id || "temp_" + Date.now() };
         await dbOperation("trator", "readwrite", store => store.put(tempObj));
       }
+      // Tratamento offline para exclusão de trator
+      if (payload.action === "excluirAgendamentoTrator") {
+        await dbOperation("trator", "readwrite", store => store.delete(payload.id));
+      }
 
       updateSyncBadge();
       return { success: true, offlineQueued: true };
@@ -553,7 +549,6 @@ function hideLoader() {
     // --- AUTENTICAÇÃO ---
     const formLogin = document.getElementById("form-login");
     if (formLogin) {
-      
       formLogin.onsubmit = async (e) => {
         e.preventDefault();
         showLoader("Carregando...");
@@ -713,7 +708,7 @@ function hideLoader() {
       };
     }
 
-    // --- TRATOR (LISTAGEM E EDIÇÃO) ---
+    // --- TRATOR (LISTAGEM, EDIÇÃO E EXCLUSÃO) ---
     async function carregarAgendamentosTrator() {
       showScreen("screen-lista-trator");
       const div = document.getElementById("lista-agendamentos-trator");
@@ -753,7 +748,10 @@ function hideLoader() {
                 <div><small>⏱️ ${item.horas} hora(s)</small></div>
                 <small class="text-secondary">${item.servico}</small>
               </div>
-              <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="excluirAgendamentoTrator('${item.id}')">Excluir</button>
+              </div>
             </div>
           </div>
         `;
@@ -785,6 +783,26 @@ function hideLoader() {
 
       document.getElementById("trator-form-title").innerText = "Editar Agendamento Trator";
       showScreen("screen-trator");
+    }
+
+    async function excluirAgendamentoTrator(id) {
+      if (!confirm("Tem certeza que deseja excluir este agendamento de trator?")) {
+        return;
+      }
+
+      showLoader("Excluindo...");
+      
+      // Remove localmente do IndexedDB de imediato para atualizar a interface logo
+      await dbOperation("trator", "readwrite", store => store.delete(id));
+
+      const res = await apiRequest({
+        action: "excluirAgendamentoTrator",
+        id: id
+      });
+
+      alert(res.offlineQueued ? "Exclusão salva offline. Será sincronizada depois." : "Agendamento excluído com sucesso!");
+      hideLoader();
+      carregarAgendamentosTrator();
     }
 
     const formTrator = document.getElementById("form-trator");
@@ -953,7 +971,7 @@ function hideLoader() {
           id: document.getElementById("agri-id").value,
           nome: document.getElementById("agri-nome").value,
           apelido: document.getElementById("agri-apelido").value,
-          caf: document.getElementById("agri-caf").value,
+          caf: document.getElementById("agri-caf-caf").value || document.getElementById("agri-caf").value,
           cafData: document.getElementById("agri-datacaf").value,
           localidade: document.getElementById("agri-localidade").value,
           contato: document.getElementById("agri-contacto").value,
