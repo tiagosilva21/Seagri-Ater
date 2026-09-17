@@ -754,11 +754,11 @@ function hideLoader() {
           objetivo: document.getElementById("act-objetivo").value,
           // Parâmetros extras para o caso de execução simultânea
           executarDireto: executarAgora,
-          statusInicial: executarAgora ? "Concluída" : "Pendente",
+          statusInicial: executarAgora ? "Realizada" : "Pendente",
           dataExecucao: executarAgora ? document.getElementById("act-data").value : "",
           atividadeRealizada: executarAgora ? (document.getElementById("act-objetivo").value + " (Executado no ato da criação)") : ""
         };
-
+        console.log(payload);
         const res = await apiRequest(payload);
         
         alert(res.offlineQueued ? "Atividade salva offline!" : (executarAgora ? "Atividade criada e registrada como concluída!" : "Atividade Criada!"));
