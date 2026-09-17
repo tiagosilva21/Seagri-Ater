@@ -754,7 +754,7 @@ function hideLoader() {
           objetivo: document.getElementById("act-objetivo").value,
           // Parâmetros extras para o caso de execução simultânea
           executarDireto: executarAgora,
-          statusInicial: executarAgora ? "Concluída" : "Agendado",
+          statusInicial: executarAgora ? "Concluída" : "Pendente",
           dataExecucao: executarAgora ? document.getElementById("act-data").value : "",
           atividadeRealizada: executarAgora ? (document.getElementById("act-objetivo").value + " (Executado no ato da criação)") : ""
         };
