@@ -15,133 +15,119 @@
   <meta name="apple-mobile-web-app-title" content="Seagri Ater">
   <link rel="apple-touch-icon" href="planting192.png">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            success: {
+              DEFAULT: '#198754',
+              dark: '#146c43',
+              light: '#d1e7dd',
+              text: '#0f5132'
+            },
+            danger: {
+              DEFAULT: '#dc3545',
+              dark: '#b02a37',
+              light: '#f8d7da',
+              text: '#842029'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    body { background-color: #f8f9fa; font-family: sans-serif; padding-top: 50px; }
-    .screen { display: none; padding: 15px; }
-    .active { display: block; }
-    .card-item { margin-bottom: 10px; border-left: 4px solid #198754; }
-    .network-banner {
-      position: fixed; top: 0; left: 0; right: 0;
-      padding: 6px; text-align: center; font-size: 13px; font-weight: bold; z-index: 9999;
+    /* Estilos dinâmicos / animações que o Tailwind puro exige escrita auxiliar */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .btn-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
     }
     body.offline-mode {
       overscroll-behavior-y: none;
-      touch-action: pan-x pan-y; /* Limita gestos que forçam reload */
+      touch-action: pan-x pan-y;
     }
-    .online { background-color: #d1e7dd; color: #0f5132; }
-    .offline { background-color: #f8d7da; color: #842029; }
-    /* Animação do Spinner nos botões */
-.btn-spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Estado desabilitado durante o envio */
-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Botão Ver no Mapa */
-.btn-ver-mapa {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #0284c7;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 8px;
-  transition: background-color 0.2s;
-}
-
-.btn-ver-mapa:hover {
-  background-color: #0369a1;
-}
   </style>
 </head>
-<body>
+<body class="bg-slate-100 font-sans pt-[50px] min-h-screen text-slate-800">
 
   <!-- INDICADOR DE STATUS DA CONEXÃO -->
-  <div id="net-status" class="network-banner online">🟢 Conectado - Sincronizado</div>
+  <div id="net-status" class="fixed top-0 left-0 right-0 p-1.5 text-center text-[13px] font-bold z-[9999] bg-emerald-100 text-emerald-800">🟢 Conectado - Sincronizado</div>
+
   <!-- LOADER GLOBAL DA TELA -->
-<div id="global-loader" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-white bg-opacity-75" style="z-index: 9999;">
-  <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
-    <span class="visually-hidden">Carregando...</span>
+  <div id="global-loader" class="hidden fixed top-0 left-0 w-full h-full flex flex-col justify-content justify-center items-center bg-white/75 z-[9999]">
+    <div class="inline-block w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" role="status">
+      <span class="sr-only">Carregando...</span>
+    </div>
+    <p id="loader-text" class="mt-2 font-bold text-slate-600">Carregando dados...</p>
   </div>
-  <p id="loader-text" class="mt-2 fw-bold text-secondary">Carregando dados...</p>
-</div>
+
   <!-- TELA DE LOGIN -->
-  <div id="screen-login" class="screen active text-center mt-3">
-    <h3>Acesso ao Sistema</h3>
-    <small class="text-muted">É necessário estar online para o primeiro login</small>
-    <form id="form-login" class="mt-4">
-      <input type="email" id="login-email" class="form-control mb-2" placeholder="E-mail" required>
-      <input type="password" id="login-senha" class="form-control mb-3" placeholder="Senha" required>
-      <button type="submit" class="btn btn-success w-100">Entrar</button>
+  <div id="screen-login" class="hidden p-4 text-center mt-3">
+    <h3 class="text-2xl font-bold mb-1">Acesso ao Sistema</h3>
+    <small class="text-slate-500">É necessário estar online para o primeiro login</small>
+    <form id="form-login" class="mt-4 max-w-sm mx-auto">
+      <input type="email" id="login-email" class="w-full px-3 py-2 border border-slate-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="E-mail" required>
+      <input type="password" id="login-senha" class="w-full px-3 py-2 border border-slate-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Senha" required>
+      <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition duration-200">Entrar</button>
     </form>
   </div>
 
   <!-- DASHBOARD PRINCIPAL -->
-  <div id="screen-main" class="screen">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 id="user-welcome">Olá!</h5>
-      <button onclick="logout()" class="btn btn-outline-danger btn-sm">Sair</button>
+  <div id="screen-main" class="hidden p-4 max-w-xl mx-auto">
+    <div class="flex justify-between items-center mb-3">
+      <h5 id="user-welcome" class="text-lg font-bold">Olá!</h5>
+      <button onclick="logout()" class="px-3 py-1 border border-red-500 text-red-500 hover:bg-red-50 text-sm rounded transition">Sair</button>
     </div>
     
-    <div class="d-grid gap-2 mb-4">
-      <button onclick="carregarAgricultoresNovaAtividade()" class="btn btn-primary">+ Nova Atividade</button><!-- showScreen('screen-nova-atividade')-->
-      <button onclick="carregarAgendamentosTrator()" id="btn-trator" class="btn btn-warning d-none">Agendamentos de Trator</button>
-      <button onclick="telaAgricultores()" class="btn btn-info text-white">Agricultores</button>
+    <div class="flex flex-col gap-2 mb-4">
+      <button onclick="carregarAgricultoresNovaAtividade()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">+ Nova Atividade</button>
+      <button onclick="carregarAgendamentosTrator()" id="btn-trator" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-lg shadow transition hidden">Agendamentos de Trator</button>
+      <button onclick="telaAgricultores()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">Agricultores</button>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h6>Atividades Pendentes Atribuídas</h6>
-      <span id="sync-count" class="badge bg-secondary">Fila Offline: 0</span>
+    <div class="flex justify-between items-center mb-2">
+      <h6 class="font-semibold text-slate-700">Atividades Pendentes Atribuídas</h6>
+      <span id="sync-count" class="text-xs bg-slate-500 text-white px-2 py-1 rounded-full">Fila Offline: 0</span>
     </div>
-    <div id="lista-atividades">Carregando...</div>
+    <div id="lista-atividades" class="space-y-2">Carregando...</div>
   </div>
 
   <!-- CRIAR ATIVIDADE -->
-  <div id="screen-nova-atividade" class="screen">
-    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4>Nova Atividade</h4>
-    <form id="form-atividade">
+  <div id="screen-nova-atividade" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-main')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <h4 class="text-xl font-bold mb-3">Nova Atividade</h4>
+    <form id="form-atividade" class="space-y-3">
       
-      <div class="form-floating">
-        <input type="date" id="act-data" class="form-control mb-2" required>
-        <label for="act-data">Data</label>
+      <div>
+        <label for="act-data" class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+        <input type="date" id="act-data" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
       </div>
-      <div class="form-floating d-none">
-        <input type="text" id="act-solicitante" class="form-control mb-2" placeholder="Solicitante">
-        <label for="act-solicitante">Solicitante</label>
+      <div class="hidden">
+        <label for="act-solicitante" class="block text-xs font-semibold text-slate-600 mb-1">Solicitante</label>
+        <input type="text" id="act-solicitante" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Solicitante">
       </div>
-      <div class="form-floating">
-        <input type="text" id="act-agricultor" list="datalist-agricultores" class="form-control mb-2" placeholder="Agricultor" >
-        <label for="act-agricultor">Agricultor</label>
-        <datalist id="datalist-agricultores">
-          <!-- Preenchido via JavaScript -->
-        </datalist>
+      <div>
+        <label for="act-agricultor" class="block text-xs font-semibold text-slate-600 mb-1">Agricultor</label>
+        <input type="text" id="act-agricultor" list="datalist-agricultores" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Agricultor">
+        <datalist id="datalist-agricultores"></datalist>
       </div>
-      <div class="form-floating">
-         <select class="form-select form-select-lg" id="act-tipo" aria-label="Selecione um Responsável">
+      <div>
+        <label for="act-tipo" class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Atividade</label>
+        <select class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base" id="act-tipo" aria-label="Selecione um Responsável">
              <option value="Visita Técnica">Visita Técnica</option>
              <option value="Atendimento">Atendimento</option>
              <option value="CAF">CAF</option>
@@ -152,185 +138,183 @@ button:disabled {
              <option value="Reunião">Reunião</option>
              <option value="Cadastro">Cadastro</option>
              <option value="Atividade">Atividade</option>
-         </select>
-        <!--input type="text" id="act-tipo" class="form-control mb-2" placeholder="Tipo de Atividade"-->
-        <label for="act-tipo">Tipo de Atividade</label>
+        </select>
       </div>
       
-      <div class="form-floating d-none">
-        <input type="text" id="idgps" class="form-control mb-2" placeholder="Tipo de Atividade">
-        
+      <div class="hidden">
+        <input type="text" id="idgps" class="w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="Tipo de Atividade">
       </div>
-      <div class="form-floating mb-3">
-        <select class="form-select form-select-lg" id="act-responsavel" aria-label="Selecione um Responsável" required>
-          <!--option value="">Carregando responsáveis...</option-->
-        </select>
-        <label for="act-responsavel">Responsável Principal</label>
+      <div>
+        <label for="act-responsavel" class="block text-xs font-semibold text-slate-600 mb-1">Responsável Principal</label>
+        <select class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base" id="act-responsavel" aria-label="Selecione um Responsável" required></select>
       </div>
-      <div class="form-floating">
-        <input type="text" id="act-localidade" class="form-control mb-2" placeholder="Localidade">
-        <label for="act-localidade">Localidade</label>
+      <div>
+        <label for="act-localidade" class="block text-xs font-semibold text-slate-600 mb-1">Localidade</label>
+        <input type="text" id="act-localidade" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Localidade">
       </div>
-      <div class="form-floating">
-        <textarea id="act-objetivo" class="form-control mb-3" placeholder="Objetivo"></textarea>
-        <label for="act-objetivo">Objetivo</label>
+      <div>
+        <label for="act-objetivo" class="block text-xs font-semibold text-slate-600 mb-1">Objetivo</label>
+        <textarea id="act-objetivo" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Objetivo"></textarea>
       </div>
-      <!-- Adicione esta opção logo antes do botão de Salvar -->
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="act-executar-agora" onchange="verificarResponsavelExecucao()">
-        <label class="form-check-label" for="act-executar-agora">
+      
+      <div class="flex items-center gap-2 mb-3">
+        <input class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500" type="checkbox" id="act-executar-agora" onchange="verificarResponsavelExecucao()">
+        <label class="text-sm text-slate-700 select-none cursor-pointer" for="act-executar-agora">
           Já estou executando esta atividade agora (Responsável sou eu)
         </label>
       </div>
 
-      <!--button type="submit" id="btn-criar-atividade" class="btn btn-success w-100">Salvar Atividade</button-->
-      <button type="submit" id="btn-criar-atividade" class="btn btn-success w-100">Salvar</button>
+      <button type="submit" id="btn-criar-atividade" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">Salvar</button>
     </form>
   </div>
 
   <!-- EXECUÇÃO DE ATIVIDADE -->
-  <div id="screen-execucao" class="screen">
-    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <div class="d-flex justify-content-between">
+  <div id="screen-execucao" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-main')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <div class="flex justify-between items-center mb-3">
       <div>
-        <h4>Concluir Atividade</h4>
+        <h4 class="text-xl font-bold">Concluir Atividade</h4>
       </div>
       <div id="maps"></div>
     </div>
-    <form id="form-execucao">
-      <div class="form-floating">
+    <form id="form-execucao" class="space-y-3">
+      <div>
         <input type="hidden" id="exec-id">
-        <input type="date" id="exec-data" class="form-control mb-2" required>
-        <label for="exec-data">Data</label>
+        <label for="exec-data" class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+        <input type="date" id="exec-data" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
       </div>
-      <div class="form-floating">
-        <input type="text" id="exec-tecnicos" class="form-control mb-2" placeholder="Técnicos Presentes">
-        <label for="exec-tecnicos">Técnicos Presentes</label>
+      <div>
+        <label for="exec-tecnicos" class="block text-xs font-semibold text-slate-600 mb-1">Técnicos Presentes</label>
+        <input type="text" id="exec-tecnicos" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Técnicos Presentes">
       </div>
-      <div class="form-floating">
-        <textarea id="exec-atividade" class="form-control mb-2" placeholder="Atividade Realizada" required></textarea>
-        <label for="exec-atividade">Atividade Realizada</label>
-      </div>
-      
-      <div class="input-group mb-3">
-        <input type="text" id="exec-geo" class="form-control" placeholder="Geolocalização (Lat, Long)">
-        <button type="button" onclick="obterGeolocalizacao()" class="btn btn-outline-secondary">GPS</button>
+      <div>
+        <label for="exec-atividade" class="block text-xs font-semibold text-slate-600 mb-1">Atividade Realizada</label>
+        <textarea id="exec-atividade" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Atividade Realizada" required></textarea>
       </div>
       
+      <div>
+        <label for="exec-geo" class="block text-xs font-semibold text-slate-600 mb-1">Geolocalização (Lat, Long)</label>
+        <div class="flex gap-2">
+          <input type="text" id="exec-geo" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Geolocalização (Lat, Long)">
+          <button type="button" onclick="obterGeolocalizacao()" class="px-4 py-2 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium rounded-lg transition">GPS</button>
+        </div>
+      </div>
        
-      <button type="submit" id="btn-execucao"  class="btn btn-success w-100">Registrar Execução</button>
+      <button type="submit" id="btn-execucao" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">Registrar Execução</button>
     </form>
   </div>
 
   <!-- TELA LISTA TRATOR (MÊS) -->
-  <div id="screen-lista-trator" class="screen">
-    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4>Agendamentos de Trator</h4>
+  <div id="screen-lista-trator" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-main')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <h4 class="text-xl font-bold mb-3">Agendamentos de Trator</h4>
     
-    <div class="row g-2 mb-3 align-items-center">
-      <div class="col-8">
-        <input type="month" id="filtro-mes-trator" class="form-control" onchange="carregarAgendamentosTrator()">
+    <div class="flex gap-2 mb-3 items-center">
+      <div class="flex-grow">
+        <input type="month" id="filtro-mes-trator" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="carregarAgendamentosTrator()">
       </div>
-      <div class="col-4">
-        <button onclick="novoAgendamentoTrator()" class="btn btn-warning w-100 btn-sm">+ Novo</button>
+      <div>
+        <button onclick="novoAgendamentoTrator()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition shadow whitespace-nowrap">+ Novo</button>
       </div>
     </div>
 
-    <div id="lista-agendamentos-trator">Carregando...</div>
+    <div id="lista-agendamentos-trator" class="space-y-2">Carregando...</div>
   </div>
 
   <!-- AGENDAMENTO TRATOR (FORMULÁRIO) -->
-  <div id="screen-trator" class="screen">
-    <button onclick="showScreen('screen-lista-trator')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4 id="trator-form-title">Agendar / Editar Trator</h4>
-    <form id="form-trator">
+  <div id="screen-trator" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-lista-trator')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <h4 id="trator-form-title" class="text-xl font-bold mb-3">Agendar / Editar Trator</h4>
+    <form id="form-trator" class="space-y-3">
       <input type="hidden" id="trator-id">
         
-      <div class="form-floating">
-        <input type="text" id="trator-agricultor" class="form-control mb-2" placeholder="Agricultor" required>
-        <label for="trator-agricultor">Agricultor</label>
+      <div>
+        <label for="trator-agricultor" class="block text-xs font-semibold text-slate-600 mb-1">Agricultor</label>
+        <input type="text" id="trator-agricultor" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Agricultor" required>
       </div>
-      <div class="form-floating">
-        <input type="date" id="trator-data" class="form-control mb-2" required>
-        <label for="trator-data">Data</label>
+      <div>
+        <label for="trator-data" class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+        <input type="date" id="trator-data" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
       </div>
-      <div class="form-floating">
-        <input type="text" id="trator-local" class="form-control mb-2" placeholder="Local / Propriedade" required>
-        <label for="trator-local">Local / Propriedade</label>
+      <div>
+        <label for="trator-local" class="block text-xs font-semibold text-slate-600 mb-1">Local / Propriedade</label>
+        <input type="text" id="trator-local" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Local / Propriedade" required>
       </div>
-      <div class="form-floating">
-        <input type="number" id="trator-horas" class="form-control mb-2" placeholder="Horas Previstas">
-        <label for="trator-horas">Horas Previstas</label>
+      <div>
+        <label for="trator-horas" class="block text-xs font-semibold text-slate-600 mb-1">Horas Previstas</label>
+        <input type="number" id="trator-horas" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Horas Previstas">
       </div>
-      <div class="form-floating">
-        <textarea id="trator-servico" class="form-control mb-3" placeholder="Serviço a Realizar" required></textarea>
-        <label for="trator-servico">Serviço a Realizar</label>
+      <div>
+        <label for="trator-servico" class="block text-xs font-semibold text-slate-600 mb-1">Serviço a Realizar</label>
+        <textarea id="trator-servico" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Serviço a Realizar" required></textarea>
       </div>
     
-      <button type="submit" id="btn-screen-trator" class="btn btn-success w-100">Salvar Agendamento</button>
+      <button type="submit" id="btn-screen-trator" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">Salvar Agendamento</button>
     </form>
   </div>
 
   <!-- AGRICULTORES -->
-  <div id="screen-agricultores" class="screen">
-    <button onclick="showScreen('screen-main')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4>Agricultores</h4>
-    <div class="d-flex gap-2 mb-3">
-        <input type="text" id="busca-agricultor" class="form-control" placeholder="Pesquisar por nome ou apelido" oninput="filtrarAgricultores()">
-    <button onclick="novoAgricultor()" class="btn btn-primary text-nowrap">+ Novo</button>
-  </div>
-    <!--button onclick="novoAgricultor()" class="btn btn-sm btn-outline-primary mb-3">+ Novo Agricultor</button-->
-    <div id="lista-agricultores"></div>
+  <div id="screen-agricultores" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-main')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <h4 class="text-xl font-bold mb-3">Agricultores</h4>
+    <div class="flex gap-2 mb-3">
+      <input type="text" id="busca-agricultor" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Pesquisar por nome ou apelido" oninput="filtrarAgricultores()">
+      <button onclick="novoAgricultor()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg whitespace-nowrap transition shadow">+ Novo</button>
+    </div>
+    <div id="lista-agricultores" class="space-y-2"></div>
   </div>
 
   <!-- FORMULARIO AGRICULTOR -->
-  <div id="screen-form-agricultor" class="screen">
-    <button onclick="showScreen('screen-agricultores')" class="btn btn-secondary btn-sm mb-3">← Voltar</button>
-    <h4 id="agri-form-title">Cadastrar Agricultor</h4>
-    <form id="form-agricultor">
+  <div id="screen-form-agricultor" class="hidden p-4 max-w-xl mx-auto">
+    <button onclick="showScreen('screen-agricultores')" class="bg-slate-500 hover:bg-slate-600 text-white text-sm px-3 py-1 rounded mb-3 transition">← Voltar</button>
+    <h4 id="agri-form-title" class="text-xl font-bold mb-3">Cadastrar Agricultor</h4>
+    <form id="form-agricultor" class="space-y-3">
       <input type="hidden" id="agri-id">
         
-      <div class="form-floating">
-        <input type="text" id="agri-nome" class="form-control mb-2" placeholder="Nome Completo" required>
-        <label for="agri-nome">Nome Completo</label>
+      <div>
+        <label for="agri-nome" class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo</label>
+        <input type="text" id="agri-nome" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Nome Completo" required>
       </div>
-      <div class="form-floating">
-        <input type="text" id="agri-apelido" class="form-control mb-2" placeholder="Apelido">
-        <label for="agri-apelido">Apelido</label>
+      <div>
+        <label for="agri-apelido" class="block text-xs font-semibold text-slate-600 mb-1">Apelido</label>
+        <input type="text" id="agri-apelido" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Apelido">
       </div>
-      <div class="form-floating">
-        <input type="text" id="agri-caf" class="form-control mb-2" placeholder="Número do CAF">
-        <label for="agri-caf">Número do CAF</label>
+      <div>
+        <label for="agri-caf" class="block text-xs font-semibold text-slate-600 mb-1">Número do CAF</label>
+        <input type="text" id="agri-caf" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Número do CAF">
       </div>
-      <div class="form-floating">
-        <input type="date" id="agri-datacaf" class="form-control mb-2" placeholder="Data Cadastro CAF">
-        <label for="agri-datacaf">Data Cadastro CAF</label>
+      <div>
+        <label for="agri-datacaf" class="block text-xs font-semibold text-slate-600 mb-1">Data Cadastro CAF</label>
+        <input type="date" id="agri-datacaf" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Data Cadastro CAF">
       </div>
-      <div class="form-floating">
-        <input type="text" id="agri-localidade" class="form-control mb-2" placeholder="Localidade">
-        <label for="agri-localidade">Localidade</label>
+      <div>
+        <label for="agri-localidade" class="block text-xs font-semibold text-slate-600 mb-1">Localidade</label>
+        <input type="text" id="agri-localidade" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Localidade">
       </div>
-      <div class="form-floating">
-        <input type="text" id="agri-contacto" class="form-control mb-2" placeholder="Contacto">
-        <label for="agri-contacto">Contacto</label>
+      <div>
+        <label for="agri-contacto" class="block text-xs font-semibold text-slate-600 mb-1">Contacto</label>
+        <input type="text" id="agri-contacto" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contacto">
       </div>
-      <div class="form-floating">
-        <input type="text" id="agri-cultivo" class="form-control mb-2" placeholder="Tipo de Cultivo">
-        <label for="agri-cultivo">Tipo de Cultivo</label>
+      <div>
+        <label for="agri-cultivo" class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Cultivo</label>
+        <input type="text" id="agri-cultivo" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Tipo de Cultivo">
       </div>
-      <div class="form-floating">
-        <input type="number" step="0.01" id="agri-terra" class="form-control mb-2" placeholder="Tamanho da Terra (ha)">
-        <label for="agri-terra">Tamanho da Terra (ha)</label>
+      <div>
+        <label for="agri-terra" class="block text-xs font-semibold text-slate-600 mb-1">Tamanho da Terra (ha)</label>
+        <input type="number" step="0.01" id="agri-terra" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Tamanho da Terra (ha)">
       </div>
-      <div class="input-group mb-3">
-        <input type="text" id="agri-geo" class="form-control" placeholder="Geolocalização (Lat, Long)" required>
-        <button type="button" onclick="obterGeolocalizacaoAgri()" class="btn btn-outline-secondary">GPS</button>
+      <div>
+        <label for="agri-geo" class="block text-xs font-semibold text-slate-600 mb-1">Geolocalização (Lat, Long)</label>
+        <div class="flex gap-2">
+          <input type="text" id="agri-geo" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Geolocalização (Lat, Long)" required>
+          <button type="button" onclick="obterGeolocalizacaoAgri()" class="px-4 py-2 border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium rounded-lg transition">GPS</button>
+        </div>
       </div>
-      <div class="form-floating">
-        <textarea id="agri-obs" class="form-control mb-3" placeholder="Observações"></textarea>
-        <label for="agri-obs">Observações</label>
+      <div>
+        <label for="agri-obs" class="block text-xs font-semibold text-slate-600 mb-1">Observações</label>
+        <textarea id="agri-obs" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Observações"></textarea>
       </div>
-      <button type="submit" id="btn-agricultor" class="btn btn-success w-100">Salvar Dados</button>
+      <button type="submit" id="btn-agricultor" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">Salvar Dados</button>
     </form>
   </div>
 
@@ -350,12 +334,12 @@ function showLoader(mensagem = "Carregando dados...") {
   const texto = document.getElementById("loader-text");
   
   if (texto) texto.innerText = mensagem;
-  if (loader) loader.classList.remove("d-none");
+  if (loader) loader.classList.remove("hidden");
 }
 
 function hideLoader() {
   const loader = document.getElementById("global-loader");
-  if (loader) loader.classList.add("d-none");
+  if (loader) loader.classList.add("hidden");
 }
     // --- BANCO DE DADOS LOCAL (IndexedDB) ---
     function initDB() {
@@ -401,13 +385,13 @@ function hideLoader() {
       const banner = document.getElementById("net-status");
       if (!banner) return;
       if (navigator.onLine) {
-        banner.className = "network-banner online";
+        banner.className = "fixed top-0 left-0 right-0 p-1.5 text-center text-[13px] font-bold z-[9999] bg-emerald-100 text-emerald-800";
         banner.innerText = "🟢 Conectado - Sincronizando...";
         await processSyncQueue();
         document.body.classList.add('offline-mode');
         banner.innerText = "🟢 Conectado - Sincronizado";
       } else {
-        banner.className = "network-banner offline";
+        banner.className = "fixed top-0 left-0 right-0 p-1.5 text-center text-[13px] font-bold z-[9999] bg-red-100 text-red-800";
         banner.innerText = "🔴 Sem Internet - Modo Offline Ativo";
         document.body.classList.remove('offline-mode');
       }
@@ -440,14 +424,16 @@ function hideLoader() {
       updateNetworkStatus();
       if (currentUser) {
         iniciarSessao();
+      } else {
+        showScreen("screen-login");
       }
     });
 
     function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('body > div[id^="screen-"]').forEach(s => s.classList.add('hidden'));
       const screen = document.getElementById(screenId);
       console.log(screenId);
-      if (screen) screen.classList.add('active');
+      if (screen) screen.classList.remove('hidden');
 
       if (screenId == "screen-nova-atividade") {
         const actData = document.getElementById("act-data");
@@ -514,7 +500,6 @@ function hideLoader() {
         const tempObj = { ...payload, id: payload.id || "temp_" + Date.now() };
         await dbOperation("trator", "readwrite", store => store.put(tempObj));
       }
-      // Tratamento offline para exclusão de trator
       if (payload.action === "excluirAgendamentoTrator") {
         await dbOperation("trator", "readwrite", store => store.delete(payload.id));
       }
@@ -572,6 +557,7 @@ function hideLoader() {
           hideLoader();
         } else {
           alert(res.message);
+          hideLoader();
         }
       };
     }
@@ -588,9 +574,9 @@ function hideLoader() {
       
       if (btnTrator) {
         if (perfilUsuario === "trator") {
-          btnTrator.classList.remove('d-none');
+          btnTrator.classList.remove('hidden');
         } else {
-          btnTrator.classList.add('d-none');
+          btnTrator.classList.add('hidden');
         }
       }
       showScreen("screen-main");
@@ -619,14 +605,14 @@ function hideLoader() {
         }
         
         if (res.data.length === 0) {
-          container.innerHTML = "<p class='text-muted'>Nenhuma atividade pendente.</p>";
+          container.innerHTML = "<p class='text-slate-500 text-sm'>Nenhuma atividade pendente.</p>";
           return;
         }
         container.innerHTML = res.data.map(item => `
-          <div class="card card-item p-3" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.geolocalizacao}');">
-            <strong>${item.tipo} - ${item.agricultor}</strong>
-            <small>${item.localidade} | ${item.data}</small>
-            <p class="mb-0 text-truncate">${item.objetivo}</p>
+          <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-emerald-600 cursor-pointer hover:bg-slate-50 transition" onclick="abrirExecucao('${item.id}'); verificarExibirBotaoMapa('${item.geolocalizacao}');">
+            <strong class="text-slate-900 block">${item.tipo} - ${item.agricultor}</strong>
+            <small class="text-slate-500 block">${item.localidade} | ${item.data}</small>
+            <p class="mb-0 text-slate-700 truncate text-sm mt-1">${item.objetivo}</p>
           </div>
         `).join('');
       }
@@ -686,35 +672,6 @@ function hideLoader() {
         if (botao) botao.disabled = false;
       };
     }
-/*
-    const formAtividade = document.getElementById("form-atividade");
-    if (formAtividade) {
-      formAtividade.onsubmit = async (e) => {
-        e.preventDefault();
-        showLoader("Salvando...");
-        const botao = document.getElementById('btn-criar-atividade');
-        if (botao) botao.disabled = true;
-
-        const res = await apiRequest({
-          action: "criarAtividade",
-          data: document.getElementById("act-data").value,
-          solicitante: document.getElementById("act-solicitante").value,
-          agricultor: document.getElementById("act-agricultor").value,
-          tipo: document.getElementById("act-tipo").value,
-          responsavel: document.getElementById("act-responsavel").value,
-          localidade: document.getElementById("act-localidade").value,
-          geolocalizacao: document.getElementById("idgps").value,
-          objetivo: document.getElementById("act-objetivo").value
-        });
-        alert(res.offlineQueued ? "Atividade salva offline!" : "Atividade Criada!");
-        showScreen("screen-main");
-        carregarAtividadesAtribuidas();
-        hideLoader();
-        formAtividade.reset();
-        
-        if (botao) botao.disabled = false;
-      };
-    }*/
 
     const formAtividade = document.getElementById("form-atividade");
     if (formAtividade) {
@@ -724,7 +681,6 @@ function hideLoader() {
         const executarAgora = document.getElementById("act-executar-agora").checked;
         const responsavelSelecionado = document.getElementById("act-responsavel").value;
 
-        // Validação de segurança se marcou para executar mas o responsável não é ele
         if (executarAgora && currentUser && responsavelSelecionado !== currentUser.nome) {
           alert("Você só pode executar simultaneamente uma atividade se você for o responsável principal!");
           return;
@@ -734,7 +690,6 @@ function hideLoader() {
         const botao = document.getElementById('btn-criar-atividade');
         if (botao) botao.disabled = true;
 
-        // Pega a geolocalização atual automaticamente se for executar agora e houver suporte
         let geoExecucao = "";
         if (executarAgora) {
           try {
@@ -745,14 +700,13 @@ function hideLoader() {
         const payload = {
           action: "criarAtividade",
           data: document.getElementById("act-data").value,
-          solicitante: currentUser.nome,//document.getElementById("act-solicitante").value,
+          solicitante: currentUser.nome,
           agricultor: document.getElementById("act-agricultor").value,
           tipo: document.getElementById("act-tipo").value,
           responsavel: responsavelSelecionado,
           localidade: document.getElementById("act-localidade").value,
           geolocalizacao: document.getElementById("idgps").value,
           objetivo: document.getElementById("act-objetivo").value,
-          // Parâmetros extras para o caso de execução simultânea
           executarDireto: executarAgora,
           statusInicial: executarAgora ? "Realizada" : "Pendente",
           dataExecucao: executarAgora ? document.getElementById("act-data").value : "",
@@ -768,7 +722,6 @@ function hideLoader() {
         hideLoader();
         formAtividade.reset();
         
-        // Desmarca o checkbox de execução se estiver marcado
         const checkbox = document.getElementById("act-executar-agora");
         if (checkbox) checkbox.checked = false;
         
@@ -801,31 +754,31 @@ function hideLoader() {
         });
 
         if (agendamentosFiltrados.length === 0) {
-          div.innerHTML = "<p class='text-muted'>Nenhum agendamento encontrado para este mês.</p>";
+          div.innerHTML = "<p class='text-slate-500 text-sm'>Nenhum agendamento encontrado para este mês.</p>";
           return;
         }
 
         div.innerHTML = agendamentosFiltrados.map(item => {
           const dataFormatada = item.data ? item.data.split('-').reverse().join('/') : '';
           return `
-          <div class="card card-item p-3 mb-2">
-            <div class="d-flex justify-content-between align-items-start">
+          <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-emerald-600 mb-2">
+            <div class="flex justify-between items-start">
               <div>
-                <strong>${item.agricultor}</strong>
-                <div><small>🗓️ ${dataFormatada} | 📍 ${item.local}</small></div>
-                <div><small>⏱️ ${item.horas} hora(s)</small></div>
-                <small class="text-secondary">${item.servico}</small>
+                <strong class="text-slate-900">${item.agricultor}</strong>
+                <div class="text-xs text-slate-600 mt-0.5">🗓️ ${dataFormatada} | 📍 ${item.local}</div>
+                <div class="text-xs text-slate-600">⏱️ ${item.horas} hora(s)</div>
+                <small class="text-slate-500 block mt-1">${item.servico}</small>
               </div>
-              <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-outline-warning" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
-                <button class="btn btn-sm btn-outline-danger" onclick="excluirAgendamentoTrator('${item.id}')">Excluir</button>
+              <div class="flex gap-1.5">
+                <button class="px-2.5 py-1 text-xs border border-amber-500 text-amber-600 hover:bg-amber-50 rounded transition" onclick="editarAgendamentoTrator('${item.id}')">Editar</button>
+                <button class="px-2.5 py-1 text-xs border border-red-500 text-red-600 hover:bg-red-50 rounded transition" onclick="excluirAgendamentoTrator('${item.id}')">Excluir</button>
               </div>
             </div>
           </div>
         `;
         }).join('');
       } else {
-        div.innerHTML = "<p class='text-danger'>Erro ao carregar agendamentos.</p>";
+        div.innerHTML = "<p class='text-red-600 text-sm'>Erro ao carregar agendamentos.</p>";
       }
     }
 
@@ -860,7 +813,6 @@ function hideLoader() {
 
       showLoader("Excluindo...");
       
-      // Remove localmente do IndexedDB de imediato para atualizar a interface logo
       await dbOperation("trator", "readwrite", store => store.delete(id));
 
       const res = await apiRequest({
@@ -921,7 +873,6 @@ function hideLoader() {
       carregarAgricultores();
     }
  
-    
     async function carregarAgricultores() {
       const div = document.getElementById("lista-agricultores");
       if (!div) return;
@@ -941,7 +892,7 @@ function hideLoader() {
         }
         renderizarListaAgricultores(listaAgricultoresCache);
       } else {
-        div.innerHTML = "<p class='text-danger'>Erro ao carregar agricultores.</p>";
+        div.innerHTML = "<p class='text-red-600 text-sm'>Erro ao carregar agricultores.</p>";
       }
     }
 
@@ -959,24 +910,24 @@ function hideLoader() {
       if (!div) return;
       
       if (lista.length === 0) {
-        div.innerHTML = "<p class='text-muted'>Nenhum agricultor encontrado.</p>";
+        div.innerHTML = "<p class='text-slate-500 text-sm'>Nenhum agricultor encontrado.</p>";
         return;
       }
 
       div.innerHTML = lista.map(ag => `
-        <div class="card p-2 mb-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <strong>${ag.nome} (${ag.apelido || 'S/A'})</strong>
-            <div class="d-flex align-items-center gap-2">
+        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-emerald-600 mb-2">
+          <div class="flex justify-between items-center">
+            <strong class="text-slate-900">${ag.nome} (${ag.apelido || 'S/A'})</strong>
+            <div class="flex items-center gap-2">
               ${ag.gps ? `
                 <small>
-                  <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
+                  <a class="px-2.5 py-1 text-xs border border-red-500 text-red-600 hover:bg-red-50 rounded no-underline inline-block transition" href="https://maps.google.com/?q=${ag.gps}" target="_blank">Ver Mapa</a>
                 </small>
               ` : ''}
-              <button class="btn btn-sm btn-outline-primary text-decoration-none" onclick="editarAgricultor('${ag.id}')">Editar</button>
+              <button class="px-2.5 py-1 text-xs border border-blue-600 text-blue-600 hover:bg-blue-50 rounded no-underline transition" onclick="editarAgricultor('${ag.id}')">Editar</button>
             </div>
           </div>
-          <small class="text-secondary">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
+          <small class="text-slate-500 block mt-1">CAF: ${ag.caf || 'N/A'} | Tel: ${ag.contato || 'N/A'}</small>
         </div>
       `).join('');
     }
@@ -1039,7 +990,7 @@ function hideLoader() {
           id: document.getElementById("agri-id").value,
           nome: document.getElementById("agri-nome").value,
           apelido: document.getElementById("agri-apelido").value,
-          caf: document.getElementById("agri-caf-caf").value || document.getElementById("agri-caf").value,
+          caf: document.getElementById("agri-caf").value,
           cafData: document.getElementById("agri-datacaf").value,
           localidade: document.getElementById("agri-localidade").value,
           contato: document.getElementById("agri-contacto").value,
@@ -1081,7 +1032,7 @@ function hideLoader() {
         execgeo.value = geolocalizacao;
         containerMaps.innerHTML = `
           <small>
-            <a class="btn btn-sm btn-outline-danger text-decoration-none" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
+            <a class="px-2.5 py-1 text-xs border border-red-500 text-red-600 hover:bg-red-50 rounded no-underline inline-block transition" href="https://maps.google.com/?q=${geolocalizacao}" target="_blank">Ver Mapa</a>
           </small>
         `;
       } else {
@@ -1105,17 +1056,18 @@ function hideLoader() {
         }
       });
     }
+
     function verificarResponsavelExecucao() {
-  const checkbox = document.getElementById("act-executar-agora");
-  const responsavelSelect = document.getElementById("act-responsavel");
-  
-  if (checkbox && checkbox.checked) {
-    if (currentUser && responsavelSelect.value !== currentUser.nome) {
-      alert("Para executar a atividade agora, o responsável principal deve ser você (" + currentUser.nome + ").");
-      responsavelSelect.value = currentUser.nome; // Força selecionar o usuário logado ou avisa
+      const checkbox = document.getElementById("act-executar-agora");
+      const responsavelSelect = document.getElementById("act-responsavel");
+      
+      if (checkbox && checkbox.checked) {
+        if (currentUser && responsavelSelect.value !== currentUser.nome) {
+          alert("Para executar a atividade agora, o responsável principal deve ser você (" + currentUser.nome + ").");
+          responsavelSelect.value = currentUser.nome;
+        }
+      }
     }
-  }
-}
   </script>
 </body>
 </html>
