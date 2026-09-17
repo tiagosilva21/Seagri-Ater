@@ -745,11 +745,11 @@ function hideLoader() {
         const payload = {
           action: "criarAtividade",
           data: document.getElementById("act-data").value,
-          solicitante: document.getElementById("act-solicitante").value,
+          solicitante: currentUser.nome,//document.getElementById("act-solicitante").value,
           agricultor: document.getElementById("act-agricultor").value,
           tipo: document.getElementById("act-tipo").value,
           responsavel: responsavelSelecionado,
-          localidade: currentUser.nome,//document.getElementById("act-localidade").value,
+          localidade: document.getElementById("act-localidade").value,
           geolocalizacao: document.getElementById("idgps").value,
           objetivo: document.getElementById("act-objetivo").value,
           // Parâmetros extras para o caso de execução simultânea
