@@ -6,7 +6,7 @@ const ASSETS = [
   './manifest.json',
   './planting192.png',
   './planting512.png',
-  './browser@4.js'
+  './output.css'
   
 ];
 
